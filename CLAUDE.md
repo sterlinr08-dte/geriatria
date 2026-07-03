@@ -79,18 +79,23 @@ Qué se hizo, en concreto:
 - **Contenido:** consentimientos, categorías de compra/mobiliario y canales de chat
   pasados de dental/belleza a médico genérico.
 - **Conexión a la base nueva** vía `.env` (gitignored). `.env.example` documenta las vars.
-- **CI del molde:** `.github/workflows/deploy.yml` (GitHub Pages) apuntado a la base
-  geriátrica correcta. El deploy REAL será Cloudflare Pages (Fase 3).
+- **CI:** el workflow de GitHub Pages (`deploy.yml`) se **eliminó** (fallaba en cada push y
+  generaba correos; el deploy real es Cloudflare, ver Fase 3).
 
 ### PENDIENTES
 - **Usuario auth del doctor** en la base nueva (`doctor@geriatra.local`; clave del dueño).
 - **Marca/datos reales del doctor** (nombre real, dirección, teléfono, RNC, exequátur):
   el dueño los enviará → cargarlos en `ajustes_negocio` y ajustar branding.
-- **Fase 2 — adaptaciones geriátricas:** ficha con **familiar/tutor responsable + su teléfono**,
-  **alergias resaltadas en rojo**, condiciones crónicas, medicamentos, ARS, tipo de sangre,
-  edad calculada; **signos vitales** en la consulta (presión, pulso, temperatura, peso, glucosa);
-  **récipe médico RD imprimible** (℞, Dx, indicaciones, firma y exequátur); **recordatorio de
-  citas por WhatsApp**; **reporte de ingresos del mes**.
+- **Fase 2 — adaptaciones geriátricas (EN CURSO):**
+  - ✅ 2.1 Ficha: familiar/tutor responsable + teléfono, **alergias en rojo**, condiciones
+    crónicas, medicamentos; se quitó "embarazada". (`HistoriaClinica`, `Clientes`, `FichaPaciente`.)
+  - ✅ 2.2 **Récipe médico RD imprimible** (membrete del Dr., ℞, edad, firma/exequátur) en `Recetas`.
+  - ✅ 2.3 **Signos vitales** por consulta (TA/FC/FR/SAT/temp/peso/talla/IMC/glucosa) en
+    `historia_evoluciones` + `Evoluciones`.
+  - ✅ 2.4–2.6 **Valoración Geriátrica Integral**: tabla `valoracion_geriatrica` (escalas +
+    secciones narrativas + examen físico) y pestaña **"Valoración"** (`ValoracionGeriatrica.tsx`)
+    con interpretación automática de escalas y **botón Imprimir historia clínica** (calca su Word).
+  - ⏳ Falta: **recordatorio de citas por WhatsApp** y **reporte de ingresos del mes**.
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
   `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.
   - **SSO (parcial hecho):** en la base madre NEXUS (`tnwsgcxurfyuszxsewsn`), tabla

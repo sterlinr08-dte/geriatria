@@ -1,11 +1,31 @@
 import { useEffect, useState } from 'react'
-import { Save, ClipboardList, Check, Activity, FileText } from 'lucide-react'
+import { Save, ClipboardList, Check, Activity, FileText, Printer } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import { Cliente, ValoracionGeriatrica as Valoracion } from '../types'
-import { hoyISO } from '../lib/format'
+import { Cliente, ValoracionGeriatrica as Valoracion, HistoriaEvolucion } from '../types'
+import { hoyISO, fechaCorta } from '../lib/format'
+import { useNegocio } from '../lib/negocio'
 import PageHeader from '../components/PageHeader'
 import Cargando from '../components/Cargando'
 import SelectorPaciente from '../components/SelectorPaciente'
+
+const ESPECIALIDAD = 'Geriatría · Enfermedades Neurodegenerativas'
+
+// Edad en años a partir de la fecha de nacimiento.
+function edadDe(fecha: string | null | undefined): number | null {
+  if (!fecha) return null
+  const n = new Date(fecha)
+  if (isNaN(n.getTime())) return null
+  const hoy = new Date()
+  let e = hoy.getFullYear() - n.getFullYear()
+  const m = hoy.getMonth() - n.getMonth()
+  if (m < 0 || (m === 0 && hoy.getDate() < n.getDate())) e--
+  return e >= 0 && e < 130 ? e : null
+}
+
+// Escapa texto para el HTML de impresión.
+function esc(s: string): string {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
 
 // Plantilla de examen físico normal (base editable, según el formato del Dr.).
 const EXAMEN_NORMAL = `PIEL: Sin lesiones dérmicas, turgencia adecuada a la edad.
@@ -103,6 +123,7 @@ export default function ValoracionGeriatrica({ pacienteFijo }: { pacienteFijo?: 
   const [form, setForm] = useState(vacio)
   const [guardando, setGuardando] = useState(false)
   const [guardado, setGuardado] = useState(false)
+  const { negocio } = useNegocio()
 
   const set = (patch: Partial<typeof vacio>) => setForm((f) => ({ ...f, ...patch }))
 
@@ -170,6 +191,145 @@ export default function ValoracionGeriatrica({ pacienteFijo }: { pacienteFijo?: 
     setGuardado(true); setTimeout(() => setGuardado(false), 2500)
   }
 
+  async function imprimir() {
+    const cli = clientes.find((c) => c.id === pacienteId) || null
+    // Últimos signos vitales: evolución más reciente que tenga alguno.
+    const { data: evos } = await supabase
+      .from('historia_evoluciones').select('*').eq('cliente_id', pacienteId)
+      .order('fecha', { ascending: false }).order('created_at', { ascending: false }).limit(30)
+    const vit = ((evos as HistoriaEvolucion[]) || []).find((e) =>
+      [e.ta_sistolica, e.fc, e.fr, e.sat, e.temp, e.peso, e.imc, e.glucosa].some((x) => x != null)) || null
+
+    const w = window.open('', '_blank', 'width=900,height=1000')
+    if (!w) return alert('Permite las ventanas emergentes para imprimir.')
+
+    const edad = cli ? edadDe(cli.fecha_nacimiento) : null
+    const logoSrc = `${location.origin}${import.meta.env.BASE_URL}${negocio.logo}`
+    const contacto = [negocio.telefono ? `Tel.: ${negocio.telefono}` : '', negocio.whatsapp ? `Cel.: ${negocio.whatsapp}` : ''].filter(Boolean).join(' · ')
+    const upg = { '1': 'Independiente', '2': 'Independiente con ayudas', '3': 'Requiere supervisión / asistencia', '4': 'No camina' } as Record<string, string>
+
+    const secText = (t: string, v: string | null | undefined) =>
+      v && String(v).trim() ? `<div class="sec"><div class="sec-t">${esc(t)}</div><div class="sec-c">${esc(String(v)).replace(/\n/g, '<br>')}</div></div>` : ''
+
+    const escalas: [string, string, Interp][] = [
+      ['Barthel (AVD)', form.barthel ? `${form.barthel} / 100` : '', iBarthel(form.barthel)],
+      ['Minimental (MMSE)', form.minimental ? `${form.minimental} / 30` : '', iMinimental(form.minimental)],
+      ['Cruz Roja mental', form.cruz_roja_mental ? `${form.cruz_roja_mental} / 5` : '', iCruzRoja(form.cruz_roja_mental)],
+      ['Cruz Roja física', form.cruz_roja_fisica ? `${form.cruz_roja_fisica} / 5` : '', iCruzRoja(form.cruz_roja_fisica)],
+      ['Tinetti', form.tinetti ? `${form.tinetti} / 28` : '', iTinetti(form.tinetti)],
+      ['Valoración social', form.valoracion_social ? `${form.valoracion_social} pts` : '', null],
+      ['Velocidad de marcha', form.velocidad_marcha ? `${form.velocidad_marcha} m/s` : '', iVelocidad(form.velocidad_marcha)],
+      ['Sit to stand', form.sit_to_stand ? `${form.sit_to_stand} s` : '', iSitToStand(form.sit_to_stand)],
+      ['Up & Go', form.up_and_go ? (upg[form.up_and_go] || '') : '', null],
+    ]
+    const filasEsc = escalas.filter((r) => r[1])
+    const escalasHtml = filasEsc.length
+      ? `<div class="sec"><div class="sec-t">Escalas geriátricas</div><table class="esc">${filasEsc.map((r) =>
+          `<tr><td class="e-l">${esc(r[0])}</td><td class="e-v">${esc(r[1])}</td><td class="e-i">${r[2] ? esc(r[2]!.texto) : ''}</td></tr>`).join('')}</table></div>`
+      : ''
+
+    let vitTxt = ''
+    if (vit) {
+      const p: string[] = []
+      if (vit.ta_sistolica != null && vit.ta_diastolica != null) p.push(`TA ${vit.ta_sistolica}/${vit.ta_diastolica} mmHg`)
+      if (vit.fc != null) p.push(`FC ${vit.fc} L/m`)
+      if (vit.fr != null) p.push(`FR ${vit.fr} R/m`)
+      if (vit.sat != null) p.push(`SAT ${vit.sat}%`)
+      if (vit.temp != null) p.push(`Temp ${vit.temp} °C`)
+      if (vit.peso != null) p.push(`Peso ${vit.peso} lb`)
+      if (vit.imc != null) p.push(`IMC ${vit.imc}`)
+      if (vit.glucosa != null) p.push(`Glucosa ${vit.glucosa} mg/dL`)
+      vitTxt = p.join(' · ') + (vit.fecha ? `  (${fechaCorta(vit.fecha)})` : '')
+    }
+
+    const dato = (etq: string, val: string | null | undefined) =>
+      val ? `<div class="d"><span class="d-e">${esc(etq)}:</span> ${esc(String(val))}</div>` : ''
+
+    w.document.write(`<!DOCTYPE html><html lang="es"><head><meta charset="utf-8">
+<title>Historia clínica — ${esc(cli?.nombre || 'Paciente')}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Georgia,'Times New Roman',serif; color:#1f2937; margin:0; padding:34px 42px; line-height:1.5; font-size:13px; }
+  .enc { display:flex; align-items:center; gap:16px; border-bottom:2px solid #5484b4; padding-bottom:14px; margin-bottom:14px; }
+  .enc img { height:64px; width:auto; object-fit:contain; }
+  .cl-n { font-size:20px; font-weight:bold; color:#111827; margin:0; }
+  .cl-e { font-size:12px; font-weight:bold; color:#456f9c; margin-top:2px; }
+  .cl-d { font-size:11px; color:#4b5563; margin-top:3px; }
+  h1 { font-size:16px; text-align:center; letter-spacing:1px; color:#456f9c; margin:6px 0 14px; }
+  .meta { display:flex; flex-wrap:wrap; gap:4px 22px; margin-bottom:12px; }
+  .d { min-width:44%; font-size:12.5px; }
+  .d-e { font-weight:bold; color:#374151; }
+  .sec { margin-top:12px; break-inside:avoid; }
+  .sec-t { font-weight:bold; color:#456f9c; text-transform:uppercase; font-size:12px; border-bottom:1px solid #e5e7eb; padding-bottom:2px; margin-bottom:5px; }
+  .sec-c { white-space:normal; }
+  table.esc { width:100%; border-collapse:collapse; }
+  table.esc td { padding:3px 6px; border-bottom:1px solid #eef2f7; font-size:12.5px; vertical-align:top; }
+  .e-l { color:#374151; width:42%; }
+  .e-v { font-weight:bold; width:24%; }
+  .e-i { color:#6b7280; font-style:italic; }
+  .firma { margin-top:54px; text-align:center; break-inside:avoid; }
+  .firma .ln { width:280px; border-top:1px solid #374151; margin:0 auto 6px; }
+  .firma .n { font-weight:bold; }
+  @page { size: letter; margin: 12mm; }
+</style></head><body>
+  <div class="enc">
+    <img src="${logoSrc}" alt="">
+    <div>
+      <p class="cl-n">${esc(negocio.nombre)}</p>
+      <div class="cl-e">${esc(ESPECIALIDAD)}</div>
+      <div class="cl-d">${negocio.direccion ? esc(negocio.direccion) : ''}${contacto ? ' · ' + esc(contacto) : ''}</div>
+    </div>
+  </div>
+
+  <h1>Historia Clínica — Geriatría</h1>
+
+  <div class="meta">
+    ${dato('Paciente', cli?.nombre)}
+    ${dato('Edad', edad != null ? `${edad} años` : '')}
+    ${dato('Sexo', cli?.sexo)}
+    ${dato('Cédula', cli?.cedula)}
+    ${dato('Fecha', fechaCorta(form.fecha_valoracion || hoyISO()))}
+    ${dato('Seguro / ARS', cli?.seguro_ars)}
+    ${dato('Teléfono', cli?.telefono)}
+    ${dato('Informante', form.informante)}
+  </div>
+
+  ${secText('Motivo de consulta', form.motivo_consulta)}
+  ${secText('Historia de la enfermedad actual', form.enfermedad_actual)}
+  ${escalasHtml}
+  ${secText('Hábitos tóxicos', form.habitos_toxicos)}
+  ${secText('Antecedentes personales', form.antecedentes_personales)}
+  ${secText('Antecedentes heredo-familiares', form.antecedentes_familiares)}
+  ${secText('Genitourinario / continencia', form.genitourinario)}
+  ${secText('Hábito intestinal y sueño', form.habito_intestinal_sueno)}
+  ${secText('Aspectos nutricionales', form.nutricion)}
+  ${secText('Valoración funcional', form.valoracion_funcional)}
+  ${secText('Valoración mental', form.valoracion_mental)}
+  ${secText('Condición social', form.condicion_social)}
+  ${secText('Signos vitales', vitTxt)}
+  ${secText('Examen físico', form.examen_fisico)}
+  ${secText('EKG', form.ekg)}
+  ${secText('Comentario', form.comentario)}
+  ${secText('Nota', form.nota)}
+  ${secText('Observaciones', form.observaciones)}
+
+  <div class="firma">
+    <div class="ln"></div>
+    <div class="n">Dr. Marcos Cepeda Espinal</div>
+    <div style="font-size:12px;color:#456f9c;font-weight:bold;">${esc(ESPECIALIDAD)}</div>
+    <div style="font-size:11px;color:#6b7280;margin-top:3px;">Firma y sello · Exequátur: __________</div>
+  </div>
+  <script>
+    window.onload = function(){
+      var imgs = Array.prototype.slice.call(document.images)
+      Promise.all(imgs.map(function(img){ return img.complete ? Promise.resolve() : new Promise(function(res){ img.onload=img.onerror=res }) }))
+        .then(function(){ setTimeout(function(){ window.focus(); window.print() }, 150) })
+    }
+  </script>
+</body></html>`)
+    w.document.close(); w.focus()
+  }
+
   const upgInterp: Interp = form.up_and_go
     ? (() => {
         const n = Number(form.up_and_go)
@@ -207,8 +367,11 @@ export default function ValoracionGeriatrica({ pacienteFijo }: { pacienteFijo?: 
               <Activity className="text-brand-500" size={20} />
               <h2 className="font-display text-lg font-bold uppercase text-slate-800">Valoración geriátrica integral</h2>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               {guardado && <span className="inline-flex items-center gap-1 text-sm font-medium text-emerald-600"><Check size={16} /> Guardado</span>}
+              <button className="btn-ghost" onClick={imprimir}>
+                <Printer size={16} /> Imprimir historia clínica
+              </button>
               <button className="btn-primary" onClick={guardar} disabled={guardando}>
                 <Save size={16} /> {guardando ? 'Guardando…' : 'Guardar valoración'}
               </button>
