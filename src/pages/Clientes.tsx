@@ -221,11 +221,11 @@ export default function Clientes() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">Contacto de emergencia</label>
-              <input className="input" value={form.contacto_emergencia} onChange={(e) => setForm({ ...form, contacto_emergencia: e.target.value })} placeholder="Nombre" />
+              <label className="label">Familiar / tutor responsable</label>
+              <input className="input" value={form.contacto_emergencia} onChange={(e) => setForm({ ...form, contacto_emergencia: e.target.value })} placeholder="Nombre y parentesco" />
             </div>
             <div>
-              <label className="label">Tel. de emergencia</label>
+              <label className="label">Tel. del responsable</label>
               <input className="input" value={form.telefono_emergencia} onChange={(e) => setForm({ ...form, telefono_emergencia: e.target.value })} placeholder="809-000-0000" />
             </div>
           </div>

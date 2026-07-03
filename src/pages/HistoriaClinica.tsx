@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Save, FileText, Check } from 'lucide-react'
+import { Save, FileText, Check, AlertTriangle } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { Cliente, HistoriaClinica as Ficha } from '../types'
 import { GRUPOS_SANGUINEOS } from '../lib/clinico'
@@ -137,22 +137,36 @@ export default function HistoriaClinica({ pacienteFijo }: { pacienteFijo?: strin
               <Cargando />
             ) : (
               <div className="space-y-4">
+                {/* Alergias — resaltadas en rojo (crítico en geriatría) */}
+                <div className="rounded-xl border-2 border-rose-300 bg-rose-50/60 p-3">
+                  <label className="mb-1 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-rose-700">
+                    <AlertTriangle size={14} /> Alergias
+                  </label>
+                  <textarea
+                    className="w-full rounded-lg border border-rose-300 bg-white px-3 py-2.5 text-sm text-rose-900 placeholder:text-rose-300 focus:border-rose-500 focus:outline-none focus:ring-2 focus:ring-rose-200"
+                    rows={2}
+                    placeholder="Ninguna conocida"
+                    value={ficha.alergias}
+                    onChange={(e) => setFicha({ ...ficha, alergias: e.target.value })}
+                  />
+                </div>
+
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="label">Condiciones crónicas</label>
+                    <textarea className="input" rows={3} placeholder="Hipertensión, diabetes, artrosis…" value={ficha.enfermedades} onChange={(e) => setFicha({ ...ficha, enfermedades: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="label">Medicamentos actuales</label>
+                    <textarea className="input" rows={3} value={ficha.medicamentos} onChange={(e) => setFicha({ ...ficha, medicamentos: e.target.value })} />
+                  </div>
                   <div>
                     <label className="label">Antecedentes</label>
                     <textarea className="input" rows={3} value={ficha.antecedentes} onChange={(e) => setFicha({ ...ficha, antecedentes: e.target.value })} />
                   </div>
                   <div>
-                    <label className="label">Alergias</label>
-                    <textarea className="input" rows={3} value={ficha.alergias} onChange={(e) => setFicha({ ...ficha, alergias: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className="label">Medicamentos</label>
-                    <textarea className="input" rows={3} value={ficha.medicamentos} onChange={(e) => setFicha({ ...ficha, medicamentos: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className="label">Enfermedades</label>
-                    <textarea className="input" rows={3} value={ficha.enfermedades} onChange={(e) => setFicha({ ...ficha, enfermedades: e.target.value })} />
+                    <label className="label">Observaciones</label>
+                    <textarea className="input" rows={3} value={ficha.observaciones} onChange={(e) => setFicha({ ...ficha, observaciones: e.target.value })} />
                   </div>
                 </div>
 
@@ -167,18 +181,9 @@ export default function HistoriaClinica({ pacienteFijo }: { pacienteFijo?: strin
                     </select>
                   </div>
                   <label className="flex items-center gap-2 self-end pb-2 text-sm text-slate-600">
-                    <input type="checkbox" checked={ficha.embarazada} onChange={(e) => setFicha({ ...ficha, embarazada: e.target.checked })} />
-                    Embarazada
-                  </label>
-                  <label className="flex items-center gap-2 self-end pb-2 text-sm text-slate-600">
                     <input type="checkbox" checked={ficha.fumador} onChange={(e) => setFicha({ ...ficha, fumador: e.target.checked })} />
                     Fumador
                   </label>
-                </div>
-
-                <div>
-                  <label className="label">Observaciones</label>
-                  <textarea className="input" rows={3} value={ficha.observaciones} onChange={(e) => setFicha({ ...ficha, observaciones: e.target.value })} />
                 </div>
               </div>
             )}

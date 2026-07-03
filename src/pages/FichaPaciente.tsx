@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import {
   User, Camera, Pencil, CalendarPlus, FileText, Receipt, AlertTriangle,
-  HeartPulse, Pill, Baby, Cigarette, Wallet, Bell,
+  HeartPulse, Pill, UserRound, Cigarette, Wallet, Bell,
 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { Cliente } from '../types'
@@ -182,11 +182,11 @@ export default function FichaPaciente() {
                 </p>
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {historia?.alergias && <Bandera color="red" icon={<AlertTriangle size={12} />} texto={`Alergia: ${historia.alergias}`} />}
-                  {historia?.enfermedades && <Bandera color="orange" icon={<HeartPulse size={12} />} texto={historia.enfermedades} />}
-                  {historia?.medicamentos && <Bandera color="blue" icon={<Pill size={12} />} texto={historia.medicamentos} />}
-                  {historia?.embarazada && <Bandera color="pink" icon={<Baby size={12} />} texto="Embarazada" />}
+                  {historia?.enfermedades && <Bandera color="orange" icon={<HeartPulse size={12} />} texto={`Crónicas: ${historia.enfermedades}`} />}
+                  {historia?.medicamentos && <Bandera color="blue" icon={<Pill size={12} />} texto={`Medicamentos: ${historia.medicamentos}`} />}
                   {historia?.fumador && <Bandera color="gray" icon={<Cigarette size={12} />} texto="Fumador" />}
                   {cliente.seguro_ars && <Bandera color="amber" icon={<HeartPulse size={12} />} texto={`Seguro: ${cliente.seguro_ars}`} />}
+                  {cliente.contacto_emergencia && <Bandera color="green" icon={<UserRound size={12} />} texto={`Responsable: ${cliente.contacto_emergencia}${cliente.telefono_emergencia ? ` · ${cliente.telefono_emergencia}` : ''}`} />}
                   {saldo > 0 && <Bandera color="red" icon={<Wallet size={12} />} texto={`Saldo: ${money(saldo)}`} />}
                   {alertas.map((a) => <Bandera key={a.id} color="amber" icon={<Bell size={12} />} texto={a.texto} />)}
                   {!historia?.alergias && !historia?.enfermedades && !historia?.medicamentos && saldo === 0 && alertas.length === 0 && (
@@ -248,6 +248,7 @@ function Bandera({ color, icon, texto }: { color: string; icon: React.ReactNode;
   const tonos: Record<string, string> = {
     red: 'bg-rose-100 text-rose-700', orange: 'bg-orange-100 text-orange-700',
     blue: 'bg-blue-100 text-blue-700', pink: 'bg-pink-100 text-pink-700',
+    green: 'bg-emerald-100 text-emerald-700',
     gray: 'bg-slate-200 text-slate-600', amber: 'bg-amber-100 text-amber-800',
   }
   return (
@@ -282,8 +283,8 @@ function TabDatos({ cliente, edad }: { cliente: Cliente; edad: number | null }) 
         <Dato etq="Email" val={cliente.email} />
         <Dato etq="Dirección" val={cliente.direccion} />
         <Dato etq="Seguro / ARS" val={cliente.seguro_ars} />
-        <Dato etq="Contacto de emergencia" val={cliente.contacto_emergencia} />
-        <Dato etq="Tel. de emergencia" val={cliente.telefono_emergencia} />
+        <Dato etq="Familiar / tutor responsable" val={cliente.contacto_emergencia} />
+        <Dato etq="Tel. del responsable" val={cliente.telefono_emergencia} />
         <Dato etq="Ocupación" val={cliente.ocupacion} />
         <Dato etq="Referido por" val={cliente.referido_por} />
       </div>
