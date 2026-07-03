@@ -384,6 +384,23 @@ export interface HistoriaClinica {
   updated_at: string
 }
 
+// Valoración Geriátrica Integral — escalas (1 por paciente, PK = cliente_id). Fase 2.4
+export interface ValoracionGeriatrica {
+  cliente_id: string
+  fecha_valoracion: string | null
+  barthel: number | null            // /100
+  valoracion_social: number | null  // escala social
+  cruz_roja_mental: number | null   // /5
+  cruz_roja_fisica: number | null   // /5
+  minimental: number | null         // /30 (MMSE)
+  tinetti: number | null            // /28
+  up_and_go: number | null          // 1..4
+  velocidad_marcha: number | null   // m/s
+  sit_to_stand: number | null       // segundos
+  observaciones: string | null
+  updated_at: string
+}
+
 // Nota de evolución / consulta por visita
 export interface HistoriaEvolucion {
   id: string
