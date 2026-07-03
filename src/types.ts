@@ -399,6 +399,23 @@ export interface ValoracionGeriatrica {
   sit_to_stand: number | null       // segundos
   observaciones: string | null
   updated_at: string
+  // Secciones narrativas de la VGI (Fase 2.5)
+  informante: string | null
+  motivo_consulta: string | null
+  enfermedad_actual: string | null
+  habitos_toxicos: string | null
+  antecedentes_personales: string | null
+  antecedentes_familiares: string | null
+  genitourinario: string | null
+  habito_intestinal_sueno: string | null
+  nutricion: string | null
+  valoracion_funcional: string | null
+  valoracion_mental: string | null
+  condicion_social: string | null
+  examen_fisico: string | null
+  ekg: string | null
+  comentario: string | null
+  nota: string | null
 }
 
 // Nota de evolución / consulta por visita
