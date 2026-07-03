@@ -26,6 +26,21 @@ function codigoReceta(codigo: number | null | undefined): string {
   return 'R' + String(codigo ?? 0).padStart(4, '0')
 }
 
+// Especialidad del doctor (aparece en el membrete y la firma del récipe).
+const ESPECIALIDAD = 'Geriatría · Enfermedades Neurodegenerativas'
+
+// Edad en años a partir de la fecha de nacimiento (para el récipe).
+function edadDe(fecha: string | null | undefined): number | null {
+  if (!fecha) return null
+  const n = new Date(fecha)
+  if (isNaN(n.getTime())) return null
+  const hoy = new Date()
+  let e = hoy.getFullYear() - n.getFullYear()
+  const m = hoy.getMonth() - n.getMonth()
+  if (m < 0 || (m === 0 && hoy.getDate() < n.getDate())) e--
+  return e >= 0 && e < 130 ? e : null
+}
+
 // Escapa texto para insertarlo con seguridad en el HTML de impresión
 function esc(s: string): string {
   return s
@@ -207,9 +222,16 @@ export default function Recetas({ pacienteFijo }: { pacienteFijo?: string } = {}
     const w = window.open('', '_blank', 'width=800,height=900')
     if (!w) return alert('Permite las ventanas emergentes para imprimir.')
 
+    const cli = clientes.find((c) => c.id === r.cliente_id) || null
+    const edad = cli ? edadDe(cli.fecha_nacimiento) : null
     const logoSrc = `${location.origin}${import.meta.env.BASE_URL}${negocio.logo}`
     const paciente = esc(nombreCliente(r.cliente_id))
     const doctor = esc(nombreDoctor(r.empleado_id))
+    const contacto = [
+      negocio.telefono ? `Tel.: ${negocio.telefono}` : '',
+      negocio.whatsapp ? `Cel.: ${negocio.whatsapp}` : '',
+    ].filter(Boolean).join(' · ')
+    const pacienteMeta = edad != null ? `${paciente} · ${edad} años` : paciente
 
     const filasMeds = meds
       .map((m) => {
@@ -249,12 +271,13 @@ export default function Recetas({ pacienteFijo }: { pacienteFijo?: string } = {}
     display: flex;
     align-items: center;
     gap: 18px;
-    border-bottom: 2px solid #c9a227;
+    border-bottom: 2px solid #5484b4;
     padding-bottom: 18px;
     margin-bottom: 22px;
   }
   .encabezado img { height: 70px; width: auto; object-fit: contain; }
   .clinica-nombre { font-size: 22px; font-weight: bold; color: #111827; margin: 0; }
+  .clinica-especialidad { font-size: 13px; font-weight: bold; color: #456f9c; margin-top: 2px; }
   .clinica-datos { font-size: 12px; color: #4b5563; margin-top: 4px; }
   .clinica-datos div { line-height: 1.4; }
   .meta {
@@ -271,7 +294,7 @@ export default function Recetas({ pacienteFijo }: { pacienteFijo?: string } = {}
     font-size: 30px;
     font-weight: bold;
     letter-spacing: 2px;
-    color: #c9a227;
+    color: #5484b4;
     border-top: 1px solid #e5e7eb;
     border-bottom: 1px solid #e5e7eb;
     padding: 10px 0;
@@ -301,22 +324,23 @@ export default function Recetas({ pacienteFijo }: { pacienteFijo?: string } = {}
     <img src="${logoSrc}" alt="${esc(negocio.nombre)}">
     <div>
       <p class="clinica-nombre">${esc(negocio.nombre)}</p>
+      <div class="clinica-especialidad">${esc(ESPECIALIDAD)}</div>
       <div class="clinica-datos">
         ${negocio.direccion ? `<div>${esc(negocio.direccion)}</div>` : ''}
-        ${negocio.telefono ? `<div>Tel.: ${esc(negocio.telefono)}</div>` : ''}
+        ${contacto ? `<div>${esc(contacto)}</div>` : ''}
         ${negocio.rnc ? `<div>RNC: ${esc(negocio.rnc)}</div>` : ''}
       </div>
     </div>
   </div>
 
   <div class="meta">
-    <div class="campo"><span class="etiqueta">Paciente:</span> ${paciente}</div>
+    <div class="campo"><span class="etiqueta">Paciente:</span> ${pacienteMeta}</div>
     <div class="campo"><span class="etiqueta">Fecha:</span> ${esc(fechaCorta(r.fecha))}</div>
-    <div class="campo"><span class="etiqueta">Dr(a).:</span> ${doctor}</div>
+    ${cli && cli.cedula ? `<div class="campo"><span class="etiqueta">Cédula:</span> ${esc(cli.cedula)}</div>` : ''}
     <div class="campo"><span class="etiqueta">Receta:</span> ${esc(codigoReceta(r.codigo))}</div>
   </div>
 
-  <div class="titulo-rx">RECETA</div>
+  <div class="titulo-rx">&#8478;</div>
 
   ${
     filasMeds
@@ -329,7 +353,8 @@ export default function Recetas({ pacienteFijo }: { pacienteFijo?: string } = {}
   <div class="firma">
     <div class="linea"></div>
     <div class="nombre">${doctor}</div>
-    <div style="font-size:12px;color:#6b7280;">Firma del doctor(a)</div>
+    <div style="font-size:12px;color:#456f9c;font-weight:bold;">${esc(ESPECIALIDAD)}</div>
+    <div style="font-size:12px;color:#6b7280;margin-top:4px;">Firma y sello · Exequátur: __________</div>
   </div>
   <script>
     // Espera a que el logo (y cualquier imagen) termine de cargar antes de
