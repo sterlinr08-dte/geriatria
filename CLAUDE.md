@@ -41,8 +41,10 @@ nada se cruza con otros clientes. Mismo modelo que **Deluxe** (belleza) y **Amat
 - Esquema clonado FIEL de Amatista (`sdxyqaawxomnfhyaxuyo`) **sin lo dental**:
   45 tablas con RLS, funciones, triggers. Excluidas: `odontograma`, `periodontograma`,
   `radiografia_hallazgos`, `ordenes_laboratorio`. (`radiografias` se conservó como genérico.)
-- **PENDIENTE de Fase 0:** crear el **usuario auth del doctor** en la base nueva
-  (`doctor@geriatra.local`; la clave la define el dueño — **NUNCA en el repo**).
+- ✅ **Usuario auth del doctor CREADO:** `doctor@geriatra.local` (email confirmado, identidad
+  email). Perfil **admin** (`roles.key='admin'` con `es_admin=true` → acceso total) y fila en
+  `perfiles` (`username='doctor'`, activo). **Clave temporal** entregada por chat (a cambiar;
+  **NUNCA en el repo**). Se puede cambiar por SQL o en el panel de Supabase.
 
 ### ✅ FASE 1 — Código (LANDEADO en este repo)
 Se clonó el molde `amatista-dental`, se **quitaron los módulos dentales** y se **rebrandeó a la
@@ -92,9 +94,11 @@ Qué se hizo, en concreto:
   - **Falta el último interruptor:** poner `dominio='geriatra.nexusprord.com'` — SOLO cuando la
     app esté desplegada y viva ahí (poner el dominio apaga el demo de NEXUS y redirige). Con eso
     `doctor@geriatra` en nexusprord.com entra YA LOGUEADO (flujo implícito, hash `#access_token`).
-  - **También falta:** el usuario auth del doctor (`doctor@geriatra.local`, clave del dueño) y el
-    deploy en Cloudflare Pages (o GitHub Pages: su token de Actions no puede auto-activar Pages,
-    hay que habilitarlo en Settings → Pages → Source: GitHub Actions).
+  - ✅ Usuario auth del doctor **ya creado** (ver Fase 0).
+  - **Falta el DEPLOY:** en este entorno no hay `wrangler` ni credenciales de Cloudflare, y las
+    herramientas MCP de Cloudflare son de solo-lectura (sin deploy de Pages). Para desplegar por
+    Cloudflare hace falta un **API token** (permiso *Cloudflare Pages: Edit*) → `wrangler pages
+    deploy dist`. Alternativa: GitHub Pages (habilitarlo en Settings → Pages → Source: GitHub Actions).
 
 ## Comandos
 
