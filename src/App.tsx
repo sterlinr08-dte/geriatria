@@ -33,6 +33,7 @@ import Chat from './pages/Chat'
 import Tareas from './pages/Tareas'
 import Avisos from './pages/Avisos'
 import Configuracion from './pages/Configuracion'
+import Login from './pages/Login'
 import Cargando from './components/Cargando'
 import CampanaNotificaciones from './components/CampanaNotificaciones'
 import ChatDrawer from './components/chat/ChatDrawer'
@@ -84,14 +85,10 @@ export default function App() {
   }
 
   if (!session) {
-    // Entrada unificada por el portal central: si no hay sesión, se envía a NEXUS
-    // (nexusprord.com) para iniciar con "usuario@geriatra". No hay login propio.
-    window.location.replace('https://nexusprord.com')
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Cargando texto="Redirigiendo al portal…" />
-      </div>
-    )
+    // Sin sesión se muestra el login propio del consultorio. El SSO de NEXUS
+    // (flujo implícito con #access_token) sigue funcionando: cuando llega con
+    // sesión en el hash, Supabase la toma y no se ve esta pantalla.
+    return <Login />
   }
 
   return (

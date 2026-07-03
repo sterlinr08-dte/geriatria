@@ -22,14 +22,14 @@ export default function Login() {
   }
 
   return (
-    <div className="relative flex min-h-full items-center justify-center overflow-hidden bg-[#fdfaf0] p-4">
-      {/* Resplandores dorados sutiles sobre fondo claro */}
+    <div className="relative flex min-h-full items-center justify-center overflow-hidden bg-[#eef4fa] p-4">
+      {/* Resplandores azul/verde sutiles sobre fondo claro */}
       <div className="pointer-events-none absolute -top-40 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-brand-300/30 blur-[130px]" />
-      <div className="pointer-events-none absolute -bottom-32 right-0 h-80 w-80 rounded-full bg-amber-200/40 blur-[130px]" />
-      <div className="pointer-events-none absolute -left-24 top-1/3 h-72 w-72 rounded-full bg-amber-100/40 blur-[120px]" />
+      <div className="pointer-events-none absolute -bottom-32 right-0 h-80 w-80 rounded-full bg-verde-300/30 blur-[130px]" />
+      <div className="pointer-events-none absolute -left-24 top-1/3 h-72 w-72 rounded-full bg-brand-200/40 blur-[120px]" />
 
       <div className="relative z-10 w-full max-w-md">
-        <div className="rounded-3xl border border-amber-100 bg-white p-8 shadow-[0_30px_60px_-15px_rgba(201,162,39,0.35)]">
+        <div className="rounded-3xl border border-amber-100 bg-white p-8 shadow-[0_30px_60px_-15px_rgba(84,132,180,0.28)]">
           <div className="mb-8 flex flex-col items-center text-center">
             <img
               src={`${import.meta.env.BASE_URL}${negocio.logo}`}
