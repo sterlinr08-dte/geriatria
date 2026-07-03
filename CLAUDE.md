@@ -84,10 +84,17 @@ Qué se hizo, en concreto:
   **récipe médico RD imprimible** (℞, Dx, indicaciones, firma y exequátur); **recordatorio de
   citas por WhatsApp**; **reporte de ingresos del mes**.
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
-  `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`;
-  activar SSO en la base madre NEXUS (`tnwsgcxurfyuszxsewsn`), tabla `organizaciones`,
-  fila `slug='geriatra'`: `dominio`, `auth_url`, `auth_key` (anon del nuevo) y
-  `email_dominio` (`@geriatra.local`). Con eso `doctor@geriatra` en nexusprord.com entra ya logueado.
+  `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.
+  - **SSO (parcial hecho):** en la base madre NEXUS (`tnwsgcxurfyuszxsewsn`), tabla
+    `organizaciones`, fila `slug='geriatra'` → ya cargados `nombre`, `color=#5484b4`,
+    `auth_url` (base geriatra), `auth_key` (**JWT anon** legacy, 208 chars — mismo patrón que
+    Amatista/Deluxe, NO la publishable) y `email_dominio=@geriatra.local`.
+  - **Falta el último interruptor:** poner `dominio='geriatra.nexusprord.com'` — SOLO cuando la
+    app esté desplegada y viva ahí (poner el dominio apaga el demo de NEXUS y redirige). Con eso
+    `doctor@geriatra` en nexusprord.com entra YA LOGUEADO (flujo implícito, hash `#access_token`).
+  - **También falta:** el usuario auth del doctor (`doctor@geriatra.local`, clave del dueño) y el
+    deploy en Cloudflare Pages (o GitHub Pages: su token de Actions no puede auto-activar Pages,
+    hay que habilitarlo en Settings → Pages → Source: GitHub Actions).
 
 ## Comandos
 
