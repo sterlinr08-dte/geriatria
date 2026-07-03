@@ -397,6 +397,17 @@ export interface HistoriaEvolucion {
   indicaciones: string | null
   notas: string | null
   created_at: string
+  // Signos vitales de la visita (Fase 2.3)
+  ta_sistolica: number | null   // presión arterial sistólica (mmHg)
+  ta_diastolica: number | null  // presión arterial diastólica (mmHg)
+  fc: number | null             // frecuencia cardíaca / pulso (L/M)
+  fr: number | null             // frecuencia respiratoria (R/M)
+  sat: number | null            // saturación de oxígeno (%)
+  temp: number | null           // temperatura (°C)
+  peso: number | null           // peso (libras)
+  talla: number | null          // talla (cm)
+  imc: number | null            // índice de masa corporal
+  glucosa: number | null        // glucosa capilar (mg/dL)
 }
 
 export type EstadoPresupuesto = 'BORRADOR' | 'PRESENTADO' | 'APROBADO' | 'RECHAZADO' | 'FACTURADO'
