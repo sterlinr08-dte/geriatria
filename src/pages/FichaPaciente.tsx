@@ -148,14 +148,14 @@ export default function FichaPaciente() {
       ) : (
         <div className="space-y-4">
           {/* Encabezado del paciente */}
-          <div className="overflow-hidden rounded-2xl border border-amber-100 bg-gradient-to-r from-[#ccfbf1] to-[#d5f5ef] shadow-sm">
+          <div className="overflow-hidden rounded-2xl border border-amber-100 bg-gradient-to-r from-[#e3edf7] to-[#eef4fa] shadow-sm">
             <div className="flex flex-wrap items-center gap-4 p-4">
               {/* Avatar */}
               <div className="relative">
                 {fotoUrl ? (
                   <img src={fotoUrl} alt="" className="h-20 w-20 rounded-full object-cover ring-[3px] ring-white shadow-md" />
                 ) : (
-                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#0d9488] text-2xl font-bold text-white ring-[3px] ring-white shadow-md">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#5484b4] text-2xl font-bold text-white ring-[3px] ring-white shadow-md">
                     {iniciales(cliente.nombre)}
                   </div>
                 )}
@@ -172,8 +172,8 @@ export default function FichaPaciente() {
 
               {/* Datos + banderas */}
               <div className="min-w-0 flex-1">
-                <h2 className="text-xl font-bold text-[#134e4a]">{cliente.nombre}</h2>
-                <p className="text-sm text-[#0f766e]">
+                <h2 className="text-xl font-bold text-[#2c4159]">{cliente.nombre}</h2>
+                <p className="text-sm text-[#3a5c82]">
                   {codigoCliente(cliente.codigo)}
                   {edad != null && ` · ${edad} años`}
                   {cliente.sexo && ` · ${cliente.sexo}`}
@@ -190,7 +190,7 @@ export default function FichaPaciente() {
                   {saldo > 0 && <Bandera color="red" icon={<Wallet size={12} />} texto={`Saldo: ${money(saldo)}`} />}
                   {alertas.map((a) => <Bandera key={a.id} color="amber" icon={<Bell size={12} />} texto={a.texto} />)}
                   {!historia?.alergias && !historia?.enfermedades && !historia?.medicamentos && saldo === 0 && alertas.length === 0 && (
-                    <span className="text-xs text-[#0f766e]/70">Sin alertas registradas.</span>
+                    <span className="text-xs text-[#3a5c82]/70">Sin alertas registradas.</span>
                   )}
                 </div>
               </div>
@@ -203,7 +203,7 @@ export default function FichaPaciente() {
                 <button onClick={() => setTab('presupuestos')} className="flex items-center gap-1 rounded-lg bg-white px-3 py-2 text-xs font-bold text-amber-800 ring-1 ring-amber-200 hover:bg-amber-50">
                   <FileText size={14} /> Presupuesto
                 </button>
-                <button onClick={() => setTab('facturacion')} className="flex items-center gap-1 rounded-lg bg-gradient-to-b from-[#14b8a6] to-[#0d9488] px-3 py-2 text-xs font-bold text-white shadow">
+                <button onClick={() => setTab('facturacion')} className="flex items-center gap-1 rounded-lg bg-gradient-to-b from-[#5484b4] to-[#456f9c] px-3 py-2 text-xs font-bold text-white shadow">
                   <Receipt size={14} /> Facturar
                 </button>
               </div>

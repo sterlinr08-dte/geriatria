@@ -10,7 +10,7 @@ export const ESTADOS_PRESUPUESTO: { value: string; label: string; color: string 
   { value: 'PRESENTADO', label: 'Presentado', color: 'bg-blue-100 text-blue-700' },
   { value: 'APROBADO', label: 'Aprobado', color: 'bg-emerald-100 text-emerald-700' },
   { value: 'RECHAZADO', label: 'Rechazado', color: 'bg-rose-100 text-rose-700' },
-  { value: 'FACTURADO', label: 'Facturado', color: 'bg-teal-100 text-teal-800' },
+  { value: 'FACTURADO', label: 'Facturado', color: 'bg-brand-100 text-brand-700' },
 ]
 export function estadoPresupuestoDef(v: string) {
   return ESTADOS_PRESUPUESTO.find((e) => e.value === v) ?? ESTADOS_PRESUPUESTO[0]

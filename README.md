@@ -1,8 +1,8 @@
-# 🩺 Consultorio Geriátrico
+# 🩺 Consultorio Dr. Marcos Cepeda
 
-Sistema clínico para un **consultorio geriátrico**, parte del ecosistema **NEXUS PRO**.
+Sistema clínico del **Consultorio Dr. Marcos Cepeda** (geriatra), parte del ecosistema **NEXUS PRO**.
 Aplicación web construida con **React + Vite + TypeScript + Tailwind CSS** y **Supabase**
-como base de datos. Diseño **móvil primero**, tema **teal médico** (`#0d9488`).
+como base de datos. Diseño **móvil primero**, marca **azul cerebro `#5484b4` + verde hoja `#9ccc6c`**.
 
 > Derivado del molde `amatista-dental`, quitando los módulos dentales y rebrandeando a
 > consultorio médico geriátrico. El contexto y estado del proyecto están en

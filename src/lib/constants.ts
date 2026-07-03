@@ -15,14 +15,14 @@ export function usuarioAEmail(usuario: string): string {
 // Datos del negocio (aparecen en facturas, login y panel). El valor real se lee
 // de `ajustes_negocio` en la base; esto son solo valores por defecto.
 export const NEGOCIO = {
-  nombre: 'Consultorio Geriátrico',
-  direccion: '',
-  referencia: '',
-  telefono: '',
-  whatsapp: '',
+  nombre: 'Consultorio Dr. Marcos Cepeda',
+  direccion: 'Autopista Duarte Km 2.8, 5ta Planta, Suite 514, HOMS, Santiago, R.D.',
+  referencia: 'Hospital Metropolitano de Santiago (HOMS)',
+  telefono: '829-947-2222 Ext. 60514',
+  whatsapp: '829-392-7712',
   instagram: '',
   rnc: '', // Coloca aquí el RNC si aplica (aparece en los tickets)
-  logo: 'logo.svg',
+  logo: 'logo.png',
   ancho_ticket: 58, // mm del papel térmico (58 u 80)
   auto_imprimir: true, // imprimir el recibo automáticamente al cobrar
 }

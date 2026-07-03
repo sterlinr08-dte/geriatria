@@ -102,14 +102,14 @@ export default function Sidebar({ open, onClose }: Props) {
       {open && <div className="fixed inset-0 z-30 bg-slate-900/50 lg:hidden" onClick={onClose} />}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 transform flex-col border-r-2 border-[#0b6b60] bg-[linear-gradient(180deg,rgba(255,255,255,0.16),transparent_24%),linear-gradient(165deg,#14b8a6,#0d9488_45%,#0f766e)] text-teal-50 shadow-[inset_1px_1px_0_rgba(255,255,255,0.35),inset_-7px_0_18px_-10px_rgba(0,0,0,0.4),10px_0_34px_-12px_rgba(13,148,136,0.55)] transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 transform flex-col border-r-2 border-[#3a5c82] bg-[linear-gradient(180deg,rgba(255,255,255,0.16),transparent_24%),linear-gradient(165deg,#6c9ccc,#5484b4_45%,#456f9c)] text-brand-50 shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-7px_0_18px_-10px_rgba(0,0,0,0.4),10px_0_34px_-12px_rgba(69,111,156,0.5)] transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="relative border-b border-white/25 px-5 py-5">
           <img
-            src={`${import.meta.env.BASE_URL}logo.svg`}
-            alt="Consultorio Geriátrico"
+            src={`${import.meta.env.BASE_URL}logo.png`}
+            alt="Consultorio Dr. Marcos Cepeda"
             className="mx-auto aspect-square w-24 rounded-2xl bg-white object-contain p-2.5 shadow-[0_8px_18px_-6px_rgba(0,0,0,0.4),inset_0_1px_0_#fff] ring-1 ring-white/70"
           />
           <button onClick={onClose} className="absolute right-3 top-3 rounded-lg p-1 text-white/90 hover:bg-white/20 lg:hidden">

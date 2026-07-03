@@ -99,16 +99,16 @@ export default function App() {
       <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="relative z-10 flex items-center gap-3 border-b-2 border-[#0b6b60] bg-[linear-gradient(180deg,rgba(255,255,255,0.28),transparent_55%),linear-gradient(180deg,#14b8a6,#0d9488_58%,#0f766e)] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_8px_18px_-6px_rgba(13,148,136,0.6)]">
+        <header className="relative z-10 flex items-center gap-3 border-b-2 border-[#3a5c82] bg-[linear-gradient(180deg,rgba(255,255,255,0.28),transparent_55%),linear-gradient(180deg,#6c9ccc,#5484b4_58%,#456f9c)] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_8px_18px_-6px_rgba(69,111,156,0.55)]">
           <button onClick={() => setMenuOpen(true)} className="rounded-lg p-1.5 text-white hover:bg-white/20 lg:hidden" aria-label="Abrir menú">
             <Menu size={24} />
           </button>
           <img
-            src={`${import.meta.env.BASE_URL}logo.svg`}
-            alt="Consultorio Geriátrico"
+            src={`${import.meta.env.BASE_URL}logo.png`}
+            alt="Consultorio Dr. Marcos Cepeda"
             className="h-9 w-9 rounded-lg bg-white object-contain p-0.5 shadow-[0_4px_10px_-3px_rgba(0,0,0,0.4),inset_0_1px_0_#fff] ring-1 ring-white/60"
           />
-          <span className="text-lg font-semibold tracking-wide text-white [text-shadow:0_1px_2px_rgba(6,78,73,0.45)]">Consultorio Geriátrico</span>
+          <span className="text-lg font-semibold tracking-wide text-white [text-shadow:0_1px_2px_rgba(28,42,58,0.45)]">Consultorio Dr. Marcos Cepeda</span>
           <div className="ml-auto flex items-center gap-1">
             {accesoChat && <IconoChatHeader onClick={() => setChatOpen((v) => !v)} />}
             <CampanaNotificaciones />

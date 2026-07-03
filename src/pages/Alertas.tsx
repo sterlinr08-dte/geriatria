@@ -19,7 +19,7 @@ const TIPOS: { valor: TipoAlerta; etiqueta: string }[] = [
 ]
 
 // Colores por tipo: alergia=rojo, saldo=ámbar, medica=morado,
-// importante=teal, otro=gris.
+// importante=azul (marca), otro=gris.
 const ESTILO_TIPO: Record<TipoAlerta, { borde: string; badge: string }> = {
   alergia: { borde: 'border-l-rose-500', badge: 'bg-rose-50 text-rose-700' },
   saldo: { borde: 'border-l-amber-500', badge: 'bg-amber-50 text-amber-700' },

@@ -1,9 +1,22 @@
-# CLAUDE.md — CONSULTORIO GERIÁTRICO
+# CLAUDE.md — CONSULTORIO DR. MARCOS CEPEDA
 
-> Contexto de arranque del proyecto **Consultorio Geriátrico** (cliente geriatra del
+> Contexto de arranque del proyecto **Consultorio Dr. Marcos Cepeda** (geriatra, cliente del
 > ecosistema **NEXUS PRO**, dueño Sterling / sterlinr08@gmail.com).
 > Idioma de trabajo: **español** (República Dominicana, `es-DO`). Móvil primero. Estética nivel plus.
 > **El chat es desechable; el contexto vive aquí — mantener este archivo al día tras cada cambio importante.**
+
+## Datos del médico (de su tarjeta de presentación)
+
+- **Dr. Marcos Cepeda Espinal** — Geriatra · Enfermedades Neurodegenerativas.
+- **Centro:** Hospital Metropolitano de Santiago (HOMS).
+- **Dirección:** Autopista Duarte Km 2.8, 5ta Planta, Suite 514, Santiago, R.D.
+- **Tel.:** 829-947-2222 Ext. 60514 · **Cel.:** 829-392-7712 / 809-938-0954.
+- **Email:** cepedaespinal07@gmail.com.
+- **Marca:** nombre en la app = **"Consultorio Dr. Marcos Cepeda"**. Logo real =
+  cerebro (azul) + rama de hojas (verde), en `public/logo.png` (favicon `public/favicon.png`).
+- **Paleta:** azul cerebro `#5484b4` (principal, `brand`) + verde hoja `#9ccc6c` (acento, `verde`).
+  Estos datos de contacto van en `ajustes_negocio` (DB) para récipe/facturas; hay defaults en
+  `constants.ts` como respaldo.
 
 ---
 
@@ -32,8 +45,10 @@ nada se cruza con otros clientes. Mismo modelo que **Deluxe** (belleza) y **Amat
   (`doctor@geriatra.local`; la clave la define el dueño — **NUNCA en el repo**).
 
 ### ✅ FASE 1 — Código (LANDEADO en este repo)
-Se clonó el molde `amatista-dental`, se **quitaron los módulos dentales** y se **rebrandeó a
-teal médico `#0d9488`**. `npm run build` **VERDE** (1758 módulos).
+Se clonó el molde `amatista-dental`, se **quitaron los módulos dentales** y se **rebrandeó a la
+marca real del Dr. Cepeda: azul `#5484b4` + verde `#9ccc6c`** (logo cerebro+hojas).
+`npm run build` **VERDE** (1758 módulos). (Nota: en la primera pasada el color fue teal provisional;
+al llegar el logo real se cambió a azul+verde.)
 
 Qué se hizo, en concreto:
 - **Borrado (dental):** `pages/Odontograma.tsx`, `pages/Periodontograma.tsx`,
@@ -45,13 +60,13 @@ Qué se hizo, en concreto:
   (`HistoriaClinica`, `Presupuestos`, `Seguimiento`).
 - **Rutas/menú/permisos:** se quitaron odontograma/periodontograma/laboratorio de
   `App.tsx`, `Sidebar.tsx`, `lib/permisos.ts` y de las pestañas de `FichaPaciente.tsx`.
-- **Rebrand teal (de raíz):** en `tailwind.config.js` se redefine `brand` a teal y se
-  **sobrescriben** las paletas heredadas `amber`/`pink`/`fuchsia` a teal, de modo que
-  TODAS las clases heredadas se recolorean solas. Hex dorados de `index.css`,
-  `App.tsx` (header), `Sidebar.tsx` y `FichaPaciente.tsx` cambiados a teal
-  (`#0f766e → #14b8a6`, base `#0d9488`).
-- **Branding:** `NEGOCIO.nombre='Consultorio Geriátrico'`, `DOMINIO_USUARIO='@geriatra.local'`,
-  logos nuevos `public/logo.svg` + `public/favicon.svg` (cruz médica teal), `package.json`
+- **Rebrand azul+verde (de raíz):** en `tailwind.config.js` se redefine `brand` al azul del
+  logo y se **sobrescriben** las paletas heredadas `amber`/`pink`/`fuchsia` a azul, de modo que
+  TODAS las clases heredadas se recolorean solas. Se agrega la paleta `verde` de acento. Los
+  hex del molde en `index.css`, `App.tsx` (header), `Sidebar.tsx` y `FichaPaciente.tsx`
+  quedaron en azul (`#6c9ccc → #5484b4 → #456f9c`, base `#5484b4`); acento verde `#9ccc6c`.
+- **Branding:** `NEGOCIO.nombre='Consultorio Dr. Marcos Cepeda'`, `DOMINIO_USUARIO='@geriatra.local'`,
+  logo real `public/logo.png` + `public/favicon.png` (cerebro azul + hojas verdes), `package.json`
   name `consultorio-geriatria`, `index.html` título + theme-color, `public/CNAME=geriatra.nexusprord.com`.
 - **Contenido:** consentimientos, categorías de compra/mobiliario y canales de chat
   pasados de dental/belleza a médico genérico.
@@ -96,8 +111,9 @@ Requiere un `.env` (copiar de `.env.example`) con `VITE_SUPABASE_URL` y `VITE_SU
   `format.ts` (RD$, fechas), `chat.ts`, `documentos.ts` (plantillas imprimibles).
 - **`src/pages/`:** una página por módulo. La ficha del paciente (`FichaPaciente.tsx`)
   agrupa las sub-vistas por pestañas.
-- **Tema:** teal médico. NO agregar hex dorados; usar clases Tailwind (`brand-*`, teal,
-  o las heredadas `amber-*` que ya se recolorean a teal por el override del config).
+- **Tema:** azul de marca (`brand`/`azul`) + acento `verde`. NO agregar hex sueltos; usar clases
+  Tailwind (`brand-*`, `verde-*`, o las heredadas `amber-*` que ya se recolorean a azul por el
+  override del config).
 
 ## Reglas del dueño (respetar SIEMPRE)
 
@@ -115,6 +131,6 @@ Requiere un `.env` (copiar de `.env.example`) con `VITE_SUPABASE_URL` y `VITE_SU
 |---|---|---|---|
 | NEXUS PRO (madre) | `sterlinr08-dte/nexus-pro` | `tnwsgcxurfyuszxsewsn` | nexusprord.com |
 | Amatista Dental (MOLDE) | `sterlinr08-dte/amatista-dental` | `sdxyqaawxomnfhyaxuyo` | — |
-| **Consultorio Geriátrico (ESTE)** | `sterlinr08-dte/geriatria` | `xqcrpsqhjznltthnfysw` | geriatra.nexusprord.com |
+| **Consultorio Dr. Marcos Cepeda (ESTE)** | `sterlinr08-dte/geriatria` | `xqcrpsqhjznltthnfysw` | geriatra.nexusprord.com |
 
 > Contexto completo original: `sterlinr08-dte/nexus-pro` → `CONSULTORIO-CLAUDE.md`.
