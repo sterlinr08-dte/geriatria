@@ -91,14 +91,19 @@ Qué se hizo, en concreto:
     `organizaciones`, fila `slug='geriatra'` → ya cargados `nombre`, `color=#5484b4`,
     `auth_url` (base geriatra), `auth_key` (**JWT anon** legacy, 208 chars — mismo patrón que
     Amatista/Deluxe, NO la publishable) y `email_dominio=@geriatra.local`.
-  - **Falta el último interruptor:** poner `dominio='geriatra.nexusprord.com'` — SOLO cuando la
-    app esté desplegada y viva ahí (poner el dominio apaga el demo de NEXUS y redirige). Con eso
-    `doctor@geriatra` en nexusprord.com entra YA LOGUEADO (flujo implícito, hash `#access_token`).
+  - ✅ **DEPLOY HECHO** (Cloudflare Workers Static Assets, vía dashboard "Import a repository"):
+    proyecto `geriatria`, build `npm run build`, deploy `npx wrangler deploy` (config en
+    `wrangler.jsonc`, assets=`./dist`, SPA fallback). **URL producción: `https://geriatria.sterlinr08.workers.dev`.**
+    Variables de build en Cloudflare: `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`.
+    (No se pudo desde este entorno: el proxy bloquea `api.cloudflare.com`; lo montó el dueño por el panel.)
+  - ✅ **SSO ACTIVADO:** `organizaciones.slug='geriatra'` con `dominio='geriatria.sterlinr08.workers.dev'`
+    → `doctor@geriatra` en nexusprord.com entra YA LOGUEADO. También hay **login propio** en la app
+    (App.tsx muestra `pages/Login.tsx` si no hay sesión).
   - ✅ Usuario auth del doctor **ya creado** (ver Fase 0).
-  - **Falta el DEPLOY:** en este entorno no hay `wrangler` ni credenciales de Cloudflare, y las
-    herramientas MCP de Cloudflare son de solo-lectura (sin deploy de Pages). Para desplegar por
-    Cloudflare hace falta un **API token** (permiso *Cloudflare Pages: Edit*) → `wrangler pages
-    deploy dist`. Alternativa: GitHub Pages (habilitarlo en Settings → Pages → Source: GitHub Actions).
+  - **Pendiente (cosmético):** subdominio bonito `geriatra.nexusprord.com`. Al agregarlo como dominio
+    personalizado del Worker, Cloudflare dijo "ninguna zona coincide" (posible tema de cuenta/zona:
+    el Worker y la zona `nexusprord.com` podrían estar en cuentas distintas). Revisar y, cuando esté,
+    cambiar `dominio` a `geriatra.nexusprord.com`.
 
 ## Comandos
 
