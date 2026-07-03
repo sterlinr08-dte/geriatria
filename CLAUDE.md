@@ -45,6 +45,12 @@ nada se cruza con otros clientes. Mismo modelo que **Deluxe** (belleza) y **Amat
   email). Perfil **admin** (`roles.key='admin'` con `es_admin=true` → acceso total) y fila en
   `perfiles` (`username='doctor'`, activo). **Clave temporal** entregada por chat (a cambiar;
   **NUNCA en el repo**). Se puede cambiar por SQL o en el panel de Supabase.
+  - ⚠️ **GOTCHA (resuelto):** al crear un usuario auth por SQL directo, hay que poner en `''`
+    (no NULL) las columnas de token de `auth.users` (`confirmation_token`, `recovery_token`,
+    `email_change`, `email_change_token_new`, `email_change_token_current`, `phone_change`,
+    `phone_change_token`, `reauthentication_token`); si quedan NULL, GoTrue rechaza el login
+    ("Usuario o contraseña incorrectos"). Login por **nexusprord.com** con `doctor@geriatra`
+    VERIFICADO funcionando (SSO → entra ya logueado a la app).
 
 ### ✅ FASE 1 — Código (LANDEADO en este repo)
 Se clonó el molde `amatista-dental`, se **quitaron los módulos dentales** y se **rebrandeó a la
