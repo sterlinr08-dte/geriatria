@@ -11,42 +11,69 @@ import Modal from '../components/Modal'
 import SelectorPaciente from '../components/SelectorPaciente'
 import MapaCorporal2D, { Marca } from './MapaCorporal2D'
 
-// Posición aproximada (x,y en %) en la figura frontal según el sistema del diagnóstico.
+// Ubicación sugerida (x,y en % + vista) de un diagnóstico sobre la figura.
+type Ubic = { x: number; y: number; vista: Vista }
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
+const norm = (s?: string | null) => (s ?? '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+
+// Posición base por sistema (vista frontal), si no hay coincidencia por palabra.
 const POS_GRUPO: Record<string, [number, number]> = {
-  'Cardiovascular': [56, 33],
-  'Respiratorio': [44, 33],
-  'Neurológico / mental': [50, 8],
-  'Endocrino / metabólico': [50, 20],
-  'Digestivo': [50, 44],
-  'Genitourinario / renal': [50, 50],
-  'Musculoesquelético': [62, 62],
+  'Cardiovascular': [56, 30],
+  'Respiratorio': [44, 30],
+  'Neurológico / mental': [50, 7],
+  'Endocrino / metabólico': [50, 40],
+  'Digestivo': [50, 43],
+  'Genitourinario / renal': [50, 49],
+  'Musculoesquelético': [58, 62],
   'Síndromes geriátricos': [50, 40],
   'Hematológico': [48, 40],
-  'Sensorial': [54, 9],
+  'Sensorial': [53, 8],
 }
-const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
-function posPorTexto(d?: string | null): [number, number] | null {
-  const t = (d ?? '').toLowerCase()
-  if (/cabeza|cerebr|demenc|alzh|parkins|cognitiv|[aá]nimo|depres|insomn|mareo|v[eé]rtigo/.test(t)) return [50, 8]
-  if (/ojo|vista|visual|catarat|glaucoma/.test(t)) return [54, 9]
-  if (/o[ií]do|auditiv|hipoacus|zumbid/.test(t)) return [46, 9]
-  if (/coraz|card[ií]|hipertens|presi[oó]n|palpit/.test(t)) return [56, 33]
-  if (/pulm|respir|epoc|asma|\btos\b|neumon/.test(t)) return [44, 33]
-  if (/abdom|digest|est[oó]mag|g[aá]stric|intestin|estre[nñ]im|h[ií]gado/.test(t)) return [50, 44]
-  if (/ri[nñ][oó]n|renal|urin|vejig|pr[oó]stata/.test(t)) return [50, 50]
-  if (/rodilla/.test(t)) return [60, 64]
-  if (/cadera|f[eé]mur/.test(t)) return [58, 52]
-  if (/columna|lumbar|espalda|dorsal/.test(t)) return [50, 40]
-  if (/\bpie\b|pies|tobillo/.test(t)) return [58, 90]
-  if (/mano|mu[nñ]eca|hombro|brazo|codo/.test(t)) return [30, 40]
-  if (/piel|[uú]lcera|herida|escara/.test(t)) return [40, 55]
+
+function porTexto(t: string): Ubic | null {
+  const F = (x: number, y: number): Ubic => ({ x, y, vista: 'frontal' })
+  const P = (x: number, y: number): Ubic => ({ x, y, vista: 'posterior' })
+  // Espalda (vista posterior)
+  if (/dorsal|torac/.test(t)) return P(50, 32)
+  if (/sacro|escara|ulcera por presion|ulceras por presion/.test(t)) return P(50, 48)
+  if (/lumbalg|lumbar|columna|espalda/.test(t)) return P(50, 42)
+  // Frontal
+  if (/cabeza|cerebr|demenc|alzh|parkins|cognitiv|animo|depres|insomn|epileps|neuralg|ansiedad/.test(t)) return F(50, 7)
+  if (/mareo|vertigo/.test(t)) return F(50, 9)
+  if (/ojo|vista|visual|catarat|glaucoma/.test(t)) return F(53, 8)
+  if (/oido|auditiv|hipoacus|zumbid/.test(t)) return F(58, 9)
+  if (/boca|dental|dient|masticar|disfag|tragar|garganta|bucal/.test(t)) return F(50, 12)
+  if (/tiroid|bocio/.test(t)) return F(50, 16)
+  if (/coraz|cardi|hipertens|presion|palpit|arritmi|fibrilac|angina|isquemic/.test(t)) return F(56, 30)
+  if (/pulm|respir|epoc|asma|\btos\b|neumon|bronqui|sibilanc/.test(t)) return F(44, 30)
+  if (/higado|hepat|vesicula|biliar/.test(t)) return F(57, 40)
+  if (/estomag|gastric|reflujo|nausea|dispep|ulcera gastr/.test(t)) return F(50, 39)
+  if (/intestin|colon|estrenim|diarrea|abdom|digest/.test(t)) return F(50, 44)
+  if (/rinon|renal/.test(t)) return F(58, 41)
+  if (/prostata/.test(t)) return F(50, 50)
+  if (/vejig|urin|orin|incontinenc/.test(t)) return F(50, 49)
+  if (/rodilla|gonartros/.test(t)) return F(58, 66)
+  if (/cadera|femur|coxartros/.test(t)) return F(58, 52)
+  if (/hombro|clavicul/.test(t)) return F(66, 26)
+  if (/mano|muneca|dedo/.test(t)) return F(72, 50)
+  if (/codo|antebrazo/.test(t)) return F(70, 40)
+  if (/pie|pies|tobillo|hongo|juanete/.test(t)) return F(56, 92)
+  if (/pierna|gemelo|pantorr|varice|edema/.test(t)) return F(45, 78)
+  if (/artros|artrit|articul|osteoporos|fractura|reumat|sarcopenia/.test(t)) return F(58, 60)
+  if (/piel|dermat|herida|lesion/.test(t)) return F(42, 50)
+  if (/anemia|hemat|vitamin/.test(t)) return F(48, 40)
+  if (/caid/.test(t)) return F(45, 72)
   return null
 }
-function posicionSugerida(codigo: string | null, descripcion: string | null, i: number): [number, number] {
-  const base = POS_GRUPO[grupoPorCodigo(codigo) ?? ''] ?? posPorTexto(descripcion) ?? [50, 42]
-  const jx = ((i % 3) - 1) * 5
-  const jy = Math.floor(i / 3) * 5
-  return [clamp(base[0] + jx, 6, 94), clamp(base[1] + jy, 4, 94)]
+
+function ubicacionSugerida(codigo: string | null, descripcion: string | null, grupo: string | undefined, i: number): Ubic {
+  const t = norm(`${codigo ?? ''} ${descripcion ?? ''}`)
+  let u = porTexto(t)
+  if (!u && grupo && POS_GRUPO[grupo]) u = { x: POS_GRUPO[grupo][0], y: POS_GRUPO[grupo][1], vista: 'frontal' }
+  if (!u) u = { x: 50, y: 42, vista: 'frontal' }
+  const jx = ((i % 3) - 1) * 4
+  const jy = Math.floor(i / 3) * 4
+  return { x: clamp(u.x + jx, 6, 94), y: clamp(u.y + jy, 4, 94), vista: u.vista }
 }
 
 export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string } = {}) {
@@ -90,8 +117,8 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
     let cambio = false
     if (faltan.length) {
       const filas = faltan.map((p, i) => {
-        const [x, y] = posicionSugerida(p.codigo, p.descripcion, autos.length + i)
-        return { cliente_id: pid, x, y, nivel: p.cronico ? 'moderado' : 'leve', texto: p.descripcion, vista: 'frontal', origen: 'auto', codigo: p.codigo }
+        const u = ubicacionSugerida(p.codigo, p.descripcion, grupoPorCodigo(p.codigo), autos.length + i)
+        return { cliente_id: pid, x: u.x, y: u.y, nivel: p.cronico ? 'moderado' : 'leve', texto: p.descripcion, vista: u.vista, origen: 'auto', codigo: p.codigo }
       })
       await supabase.from('mapa_marcadores').insert(filas); cambio = true
     }
