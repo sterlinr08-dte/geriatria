@@ -146,11 +146,13 @@ Qué se hizo, en concreto:
     (Xbot GLB, react-three-fiber) → (3) figura 2D del adulto mayor con 11 zonas fijas + heatmap →
     (4) **versión final = pines libres:** el dueño pidió que el médico **ponga el punto donde
     quiera** (ej. si notó algo en las manos), lo mueva, y en cada punto **escriba el hallazgo**.
-    - **Figura por sexo:** `public/cuerpo-mujer.png` y `public/cuerpo-hombre.png` — **ambas fotos
-      realistas limpias que envió el dueño** (adulto mayor, cuerpo completo, frente, fondo blanco,
-      ropa interior gris, sin marcas; recortadas al bounding box y escaladas a 460px de ancho).
-      `figuraPorSexo(sexo)` en `lib/mapaCorporal.ts` elige según `clientes.sexo` (empieza con 'f'
-      / 'mujer' / 'femen' → mujer; si no, hombre).
+    - **Figura por sexo × vista:** `public/cuerpo-{hombre,mujer}[-espalda].png` — **4 fotos
+      realistas limpias que envió el dueño** (adulto mayor, cuerpo completo, fondo blanco, ropa
+      interior gris; frontal y posterior/espalda; recortadas al bounding box, ~460px de ancho).
+      `sexoKey(sexo)` (Femenino→mujer; resto→hombre), `figura(sexo, vista)` y `TIENE_ESPALDA`
+      en `lib/mapaCorporal.ts`. **Botón Frontal/Posterior** en el mapa; cada marcador guarda su
+      `vista` (columna en `mapa_marcadores`) y solo se muestra en esa vista. El **reporte imprime
+      ambas vistas**. El selector de sexo en Pacientes solo tiene Masculino/Femenino (sin "Otro").
     - `lib/mapaCorporal.ts`: `NIVELES` (Leve/Moderado/Severo → amarillo/naranja/rojo), `nivelDef`,
       `figuraPorSexo`, `DESCARGO_MAPA`. (Se quitaron las 11 zonas fijas y el heatmap.)
     - `MapaCorporal2D.tsx`: figura + pines. **Tocar el cuerpo agrega un punto** (onClick→%),
