@@ -1,52 +1,89 @@
-import { ZONAS, nivelDef, NivelKey } from '../lib/mapaCorporal'
+import { useRef, useState } from 'react'
+import { nivelDef, NivelKey } from '../lib/mapaCorporal'
 
-// Cuerpo del paciente en 2D (figura del adulto mayor) con las 11 zonas superpuestas.
-// Cada zona con nivel se enciende como "heatmap"; todas son tocables.
+export interface Marca { id: string; x: number; y: number; nivel: NivelKey; texto?: string | null }
 
+// Figura del paciente con marcadores LIBRES: el médico toca para colocar un punto,
+// lo arrastra donde quiera, y lo toca para escribir el hallazgo.
 export default function MapaCorporal2D({
-  niveles = {},
-  onSelect = () => {},
+  src, marcadores, onAdd, onMove, onOpen,
 }: {
-  niveles?: Record<string, NivelKey>
-  onSelect?: (k: string) => void
+  src: string
+  marcadores: Marca[]
+  onAdd: (x: number, y: number) => void
+  onMove: (id: string, x: number, y: number) => void
+  onOpen: (id: string) => void
 }) {
+  const boxRef = useRef<HTMLDivElement>(null)
+  const [drag, setDrag] = useState<{ id: string; sx: number; sy: number; x: number; y: number; moved: boolean } | null>(null)
+
+  function pct(clientX: number, clientY: number) {
+    const r = boxRef.current!.getBoundingClientRect()
+    return {
+      x: Math.max(0, Math.min(100, ((clientX - r.left) / r.width) * 100)),
+      y: Math.max(0, Math.min(100, ((clientY - r.top) / r.height) * 100)),
+    }
+  }
+
+  function agregar(e: React.MouseEvent) {
+    const { x, y } = pct(e.clientX, e.clientY)
+    onAdd(x, y)
+  }
+
+  function pinDown(e: React.PointerEvent, m: Marca) {
+    e.stopPropagation()
+    ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
+    const { x, y } = pct(e.clientX, e.clientY)
+    setDrag({ id: m.id, sx: x, sy: y, x: m.x, y: m.y, moved: false })
+  }
+  function pinMove(e: React.PointerEvent) {
+    if (!drag) return
+    const { x, y } = pct(e.clientX, e.clientY)
+    const moved = Math.hypot(x - drag.sx, y - drag.sy) > 1.5
+    setDrag((d) => (d ? { ...d, x, y, moved: d.moved || moved } : d))
+  }
+  function pinUp(e: React.PointerEvent, m: Marca) {
+    e.stopPropagation()
+    if (drag && drag.id === m.id) {
+      if (drag.moved) onMove(m.id, drag.x, drag.y)
+      else onOpen(m.id)
+    }
+    setDrag(null)
+  }
+
   return (
     <div
       className="flex justify-center rounded-2xl border border-brand-100 py-3"
-      style={{ background: 'radial-gradient(120% 90% at 50% 12%, #f4f8fc 0%, #e6eef7 55%, #d5e2f0 100%)' }}
+      style={{ background: 'radial-gradient(120% 90% at 50% 12%, #f6f9fc 0%, #eaf1f8 55%, #dce7f2 100%)' }}
     >
-      <div className="relative" style={{ height: 'min(68vh, 540px)' }}>
+      <div ref={boxRef} className="relative" style={{ height: 'min(70vh, 560px)' }}>
         <img
-          src="/cuerpo-geriatria.png"
+          src={src}
           alt="Cuerpo del paciente"
           draggable={false}
+          onClick={agregar}
           className="block h-full w-auto select-none rounded-xl"
+          style={{ cursor: 'crosshair' }}
         />
-        {ZONAS.map((z) => {
-          const nk = niveles[z.key] ?? 'sin'
-          const nd = nivelDef(nk)
+        {marcadores.map((m, i) => {
+          const pos = drag && drag.id === m.id ? drag : m
+          const nd = nivelDef(m.nivel)
           return (
-            <div key={z.key} className="absolute" style={{ left: `${z.pos[0]}%`, top: `${z.pos[1]}%`, transform: 'translate(-50%, -50%)' }}>
-              {nd.glow && (
-                <span
-                  aria-hidden
-                  className="absolute left-1/2 top-1/2"
-                  style={{
-                    width: 58, height: 58, transform: 'translate(-50%, -50%)', borderRadius: '9999px',
-                    background: `radial-gradient(circle, ${nd.color} 0%, ${nd.color}00 68%)`,
-                    opacity: 0.8, filter: 'blur(3px)', pointerEvents: 'none',
-                  }}
-                />
-              )}
-              <button
-                type="button"
-                onClick={() => onSelect(z.key)}
-                title={`${z.num}. ${z.nombre}`}
-                aria-label={z.nombre}
-                className="relative block rounded-full transition hover:ring-2 hover:ring-white/80"
-                style={{ width: 30, height: 30, background: 'transparent' }}
-              />
-            </div>
+            <button
+              key={m.id}
+              onPointerDown={(e) => pinDown(e, m)}
+              onPointerMove={pinMove}
+              onPointerUp={(e) => pinUp(e, m)}
+              title={m.texto || nd.label}
+              className="absolute flex items-center justify-center rounded-full text-[10px] font-bold text-white shadow-md"
+              style={{
+                left: `${pos.x}%`, top: `${pos.y}%`, transform: 'translate(-50%, -50%)',
+                width: 24, height: 24, background: nd.color, border: '2px solid #fff',
+                touchAction: 'none', cursor: 'grab',
+              }}
+            >
+              {i + 1}
+            </button>
           )
         })}
       </div>

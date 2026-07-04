@@ -141,26 +141,27 @@ Qué se hizo, en concreto:
     fecha de revisión). Botón **Imprimir** documento con membrete del paciente y líneas de firma
     (paciente/representante y médico). Documento orientativo de planificación.
   - **Fase 3 (3.1–3.6) COMPLETA.**
-  - ✅ 3.7 **Mapa del cuerpo humano (Evaluación Geriátrica Integral):** calcado del mockup del Dr.
-    **Historia de iteración:** (1) maniquí por código → el dueño quería cuerpo humano real; (2)
-    modelo 3D real (Xbot GLB gris, react-three-fiber, rotable) → el dueño quería **la figura que
-    envió** (un adulto mayor 2D realista). **Versión final = 2D** con esa figura:
-    - `public/cuerpo-geriatria.png`: figura del adulto mayor **recortada de la imagen que envió el
-      dueño** (los puntos de color del mockup quedan incrustados y sirven de marcadores de zona).
-    - `lib/mapaCorporal.ts`: **11 zonas** (cabeza/nervioso, ojos, oídos, boca/garganta, corazón,
-      pulmones, digestivo, urinario, músculoesquelético, piel, pies) con **checklist de síntomas**,
-      color de identidad y **posición 2D en %** (`pos`, alineada a los puntos de la figura); 4
-      **niveles de alerta** (Sin alteraciones/Leve/Moderado/Severo → verde/amarillo/naranja/rojo).
-    - `MapaCorporal2D.tsx`: la figura con las 11 zonas superpuestas (botones tocables invisibles +
-      **glow "heatmap"** del color del nivel cuando la zona tiene alteración).
-    - `MapaCorporal.tsx`: cuerpo 2D + lista de 11 zonas + editor (nivel + checklist + nota) con
-      **upsert por (cliente_id, zona)** en tabla `mapa_corporal` (jsonb `sintomas`, RLS) + leyenda
-      + **Reporte imprimible** (figura con zonas encendidas + tabla de hallazgos + descargo).
-    - **three.js / react-three-fiber ELIMINADOS del bundle** (ya no se importan; el 2D es liviano).
-      `MapaCorporal3D.tsx` y `public/xbot.glb` borrados. Las deps `three/@react-three/*` quedan en
-      `package.json` sin usar (se pueden desinstalar).
-    - **Pendiente (mejoras):** autollenar zonas desde CIE-10, línea de tiempo por visita; limpiar
-      los cabitos de línea que quedaron en la figura recortada (o generar una figura limpia).
+  - ✅ 3.7 **Mapa del cuerpo humano (Evaluación Geriátrica Integral):** figura 2D del paciente con
+    **marcadores LIBRES**. **Historia de iteración:** (1) maniquí por código → (2) modelo 3D real
+    (Xbot GLB, react-three-fiber) → (3) figura 2D del adulto mayor con 11 zonas fijas + heatmap →
+    (4) **versión final = pines libres:** el dueño pidió que el médico **ponga el punto donde
+    quiera** (ej. si notó algo en las manos), lo mueva, y en cada punto **escriba el hallazgo**.
+    - **Figura por sexo:** `public/cuerpo-mujer.png` y `public/cuerpo-hombre.png` — **ambas fotos
+      realistas limpias que envió el dueño** (adulto mayor, cuerpo completo, frente, fondo blanco,
+      ropa interior gris, sin marcas; recortadas al bounding box y escaladas a 460px de ancho).
+      `figuraPorSexo(sexo)` en `lib/mapaCorporal.ts` elige según `clientes.sexo` (empieza con 'f'
+      / 'mujer' / 'femen' → mujer; si no, hombre).
+    - `lib/mapaCorporal.ts`: `NIVELES` (Leve/Moderado/Severo → amarillo/naranja/rojo), `nivelDef`,
+      `figuraPorSexo`, `DESCARGO_MAPA`. (Se quitaron las 11 zonas fijas y el heatmap.)
+    - `MapaCorporal2D.tsx`: figura + pines. **Tocar el cuerpo agrega un punto** (onClick→%),
+      **arrastrar** lo mueve (pointer events + `setPointerCapture`, umbral 1.5% para distinguir
+      tap de drag), **tocar un pin** abre su editor. Pines numerados, color por nivel.
+    - `MapaCorporal.tsx`: figura por sexo + lista de hallazgos + editor (nivel + **texto libre**
+      "¿qué le encontró?") con CRUD en tabla `mapa_marcadores` (x,y en %, nivel, texto; RLS) +
+      leyenda + **Reporte imprimible** (figura con los puntos numerados + tabla de hallazgos).
+    - Tabla vieja `mapa_corporal` (11 zonas) queda sin uso; la nueva es `mapa_marcadores`.
+    - **three.js/react-three-fiber ya NO se importan** (bundle liviano). Deps siguen en package.json.
+    - **Pendiente:** hombre limpio del mismo estilo; opcional autollenar desde CIE-10 / línea de tiempo.
   - Pendiente general: exequátur y ARS del Dr.; subdominio bonito.
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
   `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.
