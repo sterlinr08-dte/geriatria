@@ -117,8 +117,14 @@ Qué se hizo, en concreto:
     `revisarMedicamento()` marca cada fármaco por principio activo con riesgo/sugerencia y gravedad
     (alto/moderado); alerta en vivo al escribir el nombre en el alta. Descargo: ayuda orientativa,
     no sustituye el juicio clínico.
-  - ⏳ Próximo: lista de problemas/diagnósticos CIE-10, registro de vacunación, plan de
-    cuidados/directivas anticipadas.
+  - ✅ 3.4 **Lista de problemas / diagnósticos CIE-10** (`lib/cie10.ts` + `ProblemasPaciente.tsx`,
+    pestaña "Problemas" en la ficha, tabla `problemas_paciente` con RLS): CRUD de la lista de
+    problemas (activos/resueltos), marca de **crónico**, fecha de diagnóstico y de resolución.
+    `lib/cie10.ts` es un **catálogo CIE-10 curado** (~55 códigos frecuentes en geriatría, por
+    sistema) con `buscarCIE10()` (por código o descripción, sin acentos); el buscador autocompleta
+    código+diagnóstico y también se puede escribir libre. Botón **Imprimir lista de problemas**
+    (activos + resueltos, con membrete del paciente).
+  - ⏳ Próximo: registro de vacunación, plan de cuidados/directivas anticipadas.
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
   `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.
   - **SSO (parcial hecho):** en la base madre NEXUS (`tnwsgcxurfyuszxsewsn`), tabla
