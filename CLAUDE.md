@@ -180,10 +180,16 @@ Qué se hizo, en concreto:
     → `doctor@geriatra` en nexusprord.com entra YA LOGUEADO. También hay **login propio** en la app
     (App.tsx muestra `pages/Login.tsx` si no hay sesión).
   - ✅ Usuario auth del doctor **ya creado** (ver Fase 0).
-  - **Pendiente (cosmético):** subdominio bonito `geriatra.nexusprord.com`. Al agregarlo como dominio
-    personalizado del Worker, Cloudflare dijo "ninguna zona coincide" (posible tema de cuenta/zona:
-    el Worker y la zona `nexusprord.com` podrían estar en cuentas distintas). Revisar y, cuando esté,
-    cambiar `dominio` a `geriatra.nexusprord.com`.
+  - ✅ **Subdominio bonito ACTIVADO:** `geriatra.nexusprord.com`. El error "ninguna zona coincide" era
+    porque el Worker `geriatria` estaba en una cuenta de Cloudflare **sin** la zona `nexusprord.com`
+    (los demás clientes —amatista/deluxe/bayolcell.nexusprord.com— viven en la cuenta que sí tiene la
+    zona). Se resolvió agregando el dominio personalizado desde la cuenta correcta (Workers → geriatria
+    → Domains & Routes → Custom Domain → `geriatra.nexusprord.com`). **SSO actualizado:** en la base
+    madre NEXUS (`tnwsgcxurfyuszxsewsn`), `organizaciones.dominio` de `slug='geriatra'` ahora es
+    `geriatra.nexusprord.com` (antes `geriatria.sterlinr08.workers.dev`).
+  - **Rutas limpias:** la app usa `BrowserRouter` (no `HashRouter`), así las URLs se ven `/ficha`
+    en vez de `/#/ficha` (el fallback SPA de Cloudflare `not_found_handling:single-page-application`
+    lo permite). El SSO por `#access_token` sigue funcionando (Supabase lo lee del hash).
 
 ## Comandos
 
