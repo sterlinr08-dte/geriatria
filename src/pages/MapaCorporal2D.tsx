@@ -7,9 +7,11 @@ interface Pin { id: string; idx: number; x: number; y: number; color: string }
 interface Card { id: string; idx: number; x: number; y: number; w: number; side: 'left' | 'right'; color: string; texto: string; nivel: NivelKey }
 interface Line { id: string; x1: number; y1: number; x2: number; y2: number; color: string }
 
-const CARD_H = 46
+const CARD_H = 42
 const CARD_GAP = 6
 const GUTTER_GAP = 8
+const CARD_W_MAX = 158  // ancho máximo del cuadro (moderado, no se estira en PC)
+const CARD_W_MIN = 72
 
 // Figura del paciente con marcadores LIBRES y sus hallazgos en cuadros al lado
 // (izquierda/derecha según el punto), unidos por una línea.
@@ -42,8 +44,10 @@ export default function MapaCorporal2D({
           .map((m, idx) => ({ m, idx, px: Fl + (m.x / 100) * Wf, py: Ft + (m.y / 100) * Hf }))
           .filter(({ m }) => (m.x < 50) === (side === 'left'))
           .sort((a, b) => a.py - b.py)
-        const cardW = side === 'left' ? Math.max(64, Fl - GUTTER_GAP) : Math.max(64, Wo - (Fl + Wf + GUTTER_GAP))
-        const cardX = side === 'left' ? 0 : Fl + Wf + GUTTER_GAP
+        // Cuadro de ancho moderado, pegado al cuerpo (no estirado hasta el borde).
+        const gutter = side === 'left' ? Fl - GUTTER_GAP : Wo - (Fl + Wf + GUTTER_GAP)
+        const cardW = Math.max(CARD_W_MIN, Math.min(CARD_W_MAX, gutter))
+        const cardX = side === 'left' ? Math.max(0, Fl - GUTTER_GAP - cardW) : Fl + Wf + GUTTER_GAP
         let prevBottom = -Infinity
         for (const o of items) {
           const nd = nivelDef(o.m.nivel)
