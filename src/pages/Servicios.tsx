@@ -189,7 +189,7 @@ export default function Servicios() {
         <div className="space-y-4">
           <div>
             <label className="label">Nombre</label>
-            <input className="input" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} placeholder="Limpieza dental" />
+            <input className="input" value={form.nombre} onChange={(e) => setForm({ ...form, nombre: e.target.value })} placeholder="Ej. Consulta geriátrica" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>

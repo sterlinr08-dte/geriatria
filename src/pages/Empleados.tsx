@@ -18,7 +18,7 @@ const vacio = {
   activo: true,
 }
 
-const puestos = ['Odontólogo/a', 'Odontólogo especialista', 'Higienista dental', 'Asistente dental', 'Recepción', 'Gerente']
+const puestos = ['Médico geriatra', 'Médico', 'Enfermero/a', 'Asistente clínico', 'Recepción', 'Gerente']
 
 interface PerfilEmp { id: string; username: string | null; rol_key: string | null; activo: boolean }
 interface RolItem { key: string; nombre: string }
