@@ -141,30 +141,26 @@ Qué se hizo, en concreto:
     fecha de revisión). Botón **Imprimir** documento con membrete del paciente y líneas de firma
     (paciente/representante y médico). Documento orientativo de planificación.
   - **Fase 3 (3.1–3.6) COMPLETA.**
-  - 🔨 3.7 **Mapa corporal 3D (EN CURSO):** **cuerpo humano real** rotable, para señalizar las
-    condiciones del paciente por zona (idea del dueño). **Paso 1 hecho:** `MapaCorporal3D.tsx`
-    carga un modelo GLB de cuerpo humano (`public/xbot.glb`, Mixamo "X Bot", uso libre; ~2.9 MB)
-    con react-three-fiber/drei/three; se **recolorea a un acabado clínico gris de marca**
-    (`#b9c6da`), se le **bajan los brazos** por código (venía en pose de T, rotación de huesos
-    `LeftArm/RightArm`) y se **centra+escala** (idempotente, resetea antes de medir con `Box3`).
-    `OrbitControls` con auto-rotación, `ContactShadows`, fondo de estudio. `MapaCorporal.tsx`
-    envuelve y **carga diferido** el motor 3D vía `React.lazy` → three.js queda en su propio chunk
-    (~245 KB gzip) que solo se baja al abrir la pestaña **"Mapa corporal"** de la ficha.
-    (Nota: primero se probó un maniquí construido por código; el dueño pidió cuerpo humano real.
-    Para volver a piel en vez de gris: cambiar el material en `MapaCorporal3D.tsx`.)
-    **Paso 2 hecho (módulo funcional, calcado del mockup del Dr. "Mapa del cuerpo humano —
-    Evaluación Geriátrica Integral"):** `lib/mapaCorporal.ts` define **11 zonas** (cabeza/nervioso,
-    ojos, oídos, boca/garganta, corazón, pulmones, digestivo, urinario, músculoesquelético,
-    piel, pies) con su **checklist de síntomas** y su **ancla 3D**; 4 **niveles de alerta**
-    (Sin alteraciones/Leve/Moderado/Severo, verde/amarillo/naranja/rojo). Cada zona con nivel
-    **enciende el cuerpo como "heatmap"** (sprite aditivo del color del nivel en el ancla; los
-    puntos de identidad de zona siempre visibles y **tocables** → raycast `onPointerDown`).
-    `MapaCorporal.tsx`: cuerpo 3D + lista de 11 zonas + editor (nivel + checklist + nota) que
-    hace **upsert por (cliente_id, zona)** en tabla `mapa_corporal` (jsonb `sintomas`, RLS) +
-    leyenda + **Reporte imprimible** (captura del canvas con `preserveDrawingBuffer` + tabla de
-    hallazgos por zona, con el descargo). Deps: `three`, `@react-three/fiber`, `@react-three/drei`.
-    **Pendiente (mejoras):** autollenado desde CIE-10, línea de tiempo por visita, pines manuales
-    de punto exacto.
+  - ✅ 3.7 **Mapa del cuerpo humano (Evaluación Geriátrica Integral):** calcado del mockup del Dr.
+    **Historia de iteración:** (1) maniquí por código → el dueño quería cuerpo humano real; (2)
+    modelo 3D real (Xbot GLB gris, react-three-fiber, rotable) → el dueño quería **la figura que
+    envió** (un adulto mayor 2D realista). **Versión final = 2D** con esa figura:
+    - `public/cuerpo-geriatria.png`: figura del adulto mayor **recortada de la imagen que envió el
+      dueño** (los puntos de color del mockup quedan incrustados y sirven de marcadores de zona).
+    - `lib/mapaCorporal.ts`: **11 zonas** (cabeza/nervioso, ojos, oídos, boca/garganta, corazón,
+      pulmones, digestivo, urinario, músculoesquelético, piel, pies) con **checklist de síntomas**,
+      color de identidad y **posición 2D en %** (`pos`, alineada a los puntos de la figura); 4
+      **niveles de alerta** (Sin alteraciones/Leve/Moderado/Severo → verde/amarillo/naranja/rojo).
+    - `MapaCorporal2D.tsx`: la figura con las 11 zonas superpuestas (botones tocables invisibles +
+      **glow "heatmap"** del color del nivel cuando la zona tiene alteración).
+    - `MapaCorporal.tsx`: cuerpo 2D + lista de 11 zonas + editor (nivel + checklist + nota) con
+      **upsert por (cliente_id, zona)** en tabla `mapa_corporal` (jsonb `sintomas`, RLS) + leyenda
+      + **Reporte imprimible** (figura con zonas encendidas + tabla de hallazgos + descargo).
+    - **three.js / react-three-fiber ELIMINADOS del bundle** (ya no se importan; el 2D es liviano).
+      `MapaCorporal3D.tsx` y `public/xbot.glb` borrados. Las deps `three/@react-three/*` quedan en
+      `package.json` sin usar (se pueden desinstalar).
+    - **Pendiente (mejoras):** autollenar zonas desde CIE-10, línea de tiempo por visita; limpiar
+      los cabitos de línea que quedaron en la figura recortada (o generar una figura limpia).
   - Pendiente general: exequátur y ARS del Dr.; subdominio bonito.
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
   `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.

@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { PersonStanding, Printer, Save, Check } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { Cliente } from '../types'
@@ -8,9 +8,7 @@ import PageHeader from '../components/PageHeader'
 import Cargando from '../components/Cargando'
 import Modal from '../components/Modal'
 import SelectorPaciente from '../components/SelectorPaciente'
-
-// El motor 3D (three.js) se carga SOLO al abrir esta pestaña.
-const MapaCorporal3D = lazy(() => import('./MapaCorporal3D'))
+import MapaCorporal2D from './MapaCorporal2D'
 
 interface Registro { nivel: NivelKey; sintomas: string[]; nota: string }
 const vacio: Registro = { nivel: 'sin', sintomas: [], nota: '' }
@@ -76,11 +74,12 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
   const conAlteraciones = ZONAS.filter((z) => (estado[z.key]?.nivel ?? 'sin') !== 'sin')
 
   function imprimir() {
-    let snap = ''
-    try {
-      const cv = document.querySelector('canvas') as HTMLCanvasElement | null
-      if (cv) snap = cv.toDataURL('image/png')
-    } catch { /* si falla la captura, se imprime sin imagen */ }
+    // Figura del cuerpo con las zonas encendidas (para el reporte)
+    const marcas = conAlteraciones.map((z) => {
+      const nd = nivelDef(estado[z.key]!.nivel)
+      return `<span style="position:absolute;left:${z.pos[0]}%;top:${z.pos[1]}%;transform:translate(-50%,-50%);width:26px;height:26px;border-radius:50%;background:${nd.color}66;border:2px solid ${nd.color}"></span>`
+    }).join('')
+    const figura = `<div style="position:relative;width:230px;margin:0 auto 14px"><img src="/cuerpo-geriatria.png" style="width:100%;display:block;max-height:none">${marcas}</div>`
 
     const filas = conAlteraciones.map((z) => {
       const r = estado[z.key]!; const nd = nivelDef(r.nivel)
@@ -99,7 +98,7 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
         h1{font-size:18px;margin:0 0 2px;color:#1e3a8a;text-align:center}
         .st{font-size:13px;color:#475569;text-align:center;margin-bottom:2px}
         .sub{color:#64748b;font-size:13px;text-align:center;margin-bottom:14px}
-        img{display:block;margin:0 auto 12px;max-height:340px}
+        .fig{position:relative;width:230px;margin:0 auto 14px}
         table{width:100%;border-collapse:collapse;font-size:13px}
         th,td{border:1px solid #e2e8f0;padding:6px 8px;text-align:left;vertical-align:top}
         th{background:#eef4fa;color:#3a5c82;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
@@ -108,7 +107,7 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
       <h1>MAPA DEL CUERPO HUMANO</h1>
       <div class="st">Evaluación Geriátrica Integral</div>
       <div class="sub">${paciente?.nombre ?? ''}${paciente?.cedula ? ' · Céd. ' + paciente.cedula : ''} · ${fechaCorta(hoyISO())}</div>
-      ${snap ? `<img src="${snap}" alt="Mapa corporal">` : ''}
+      ${conAlteraciones.length ? figura : ''}
       <table><thead><tr><th>Zona</th><th>Nivel de alerta</th><th>Hallazgos</th></tr></thead>
       <tbody>${filas || '<tr><td colspan="3" style="color:#94a3b8">Sin alteraciones registradas.</td></tr>'}</tbody></table>
       <div class="pie">${DESCARGO_MAPA}</div>
@@ -142,10 +141,8 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
             <button className="btn-ghost" onClick={imprimir}><Printer size={16} /> Reporte</button>
           </div>
 
-          {/* Cuerpo 3D */}
-          <Suspense fallback={<div className="flex items-center justify-center py-16"><Cargando /></div>}>
-            <MapaCorporal3D niveles={niveles} onSelect={abrir} />
-          </Suspense>
+          {/* Cuerpo del paciente (figura 2D del adulto mayor) */}
+          <MapaCorporal2D niveles={niveles} onSelect={abrir} />
 
           {/* Leyenda de niveles */}
           <div className="flex flex-wrap gap-2">
