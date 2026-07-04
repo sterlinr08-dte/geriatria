@@ -184,25 +184,6 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
             ))}
           </div>
 
-          {/* Lista de hallazgos de la vista actual */}
-          {marcadoresVista.length > 0 && (
-            <div className="space-y-2">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Hallazgos — {vista === 'frontal' ? 'frontal' : 'posterior'} ({marcadoresVista.length})</h3>
-              {marcadoresVista.map((m, i) => {
-                const nd = nivelDef(m.nivel)
-                return (
-                  <button key={m.id} onClick={() => abrir(m.id)}
-                    className="flex w-full items-start gap-3 rounded-xl border border-slate-100 bg-white p-3 text-left transition hover:border-brand-200 hover:bg-brand-50/40">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white" style={{ background: nd.color }}>{i + 1}</span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm text-slate-800">{m.texto || <span className="text-slate-400">Sin descripción</span>}</span>
-                      <span className="text-xs" style={{ color: nd.color }}>{nd.label}</span>
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          )}
         </div>
       )}
 
