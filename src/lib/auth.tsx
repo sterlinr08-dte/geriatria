@@ -107,10 +107,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut() {
-    await supabase.auth.signOut()
+    // scope 'local' = cierra la sesión localmente sin llamada de red (evita que se
+    // cuelgue y no llegue al redirect). El try/catch garantiza que SIEMPRE redirige.
+    try { await supabase.auth.signOut({ scope: 'local' }) } catch { /* ignorar */ }
     setPerfil(null)
-    // Volver a la puerta central (NEXUS) en vez de quedarse en el login del consultorio.
-    window.location.href = 'https://nexusprord.com'
+    // Volver a la puerta central (NEXUS), no al login propio del consultorio.
+    window.location.replace('https://nexusprord.com')
   }
 
   async function recargarPerfil() {
