@@ -132,7 +132,15 @@ Qué se hizo, en concreto:
     aún **pendientes de registrar** (click → alta prellenada), botón para sugerir la próxima
     dosis según el esquema y **impresión del carné de vacunación**. `detectarVacuna()` empareja
     el nombre libre con el esquema. Orientativo; el médico decide según el caso.
-  - ⏳ Próximo: plan de cuidados/directivas anticipadas.
+  - ✅ 3.6 **Plan de cuidados / directivas anticipadas** (`PlanCuidados.tsx`, pestaña "Plan de
+    cuidados" en la ficha, tabla `plan_cuidados` con RLS, **un registro por paciente** vía upsert
+    on `cliente_id`): objetivos/metas del cuidado, recomendaciones no farmacológicas, cuidador
+    principal + teléfono; y **directivas anticipadas** (RCP sí/ONR, nivel de intervención
+    completo/hospitalario/confort, nutrición/hidratación artificial, lugar preferido de cuidado,
+    representante/decisor sustituto + teléfono, valores y deseos del paciente, observaciones,
+    fecha de revisión). Botón **Imprimir** documento con membrete del paciente y líneas de firma
+    (paciente/representante y médico). Documento orientativo de planificación.
+  - **Fase 3 COMPLETA** (3.1–3.6). Pendiente general: exequátur y ARS del Dr.; subdominio bonito.
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
   `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.
   - **SSO (parcial hecho):** en la base madre NEXUS (`tnwsgcxurfyuszxsewsn`), tabla

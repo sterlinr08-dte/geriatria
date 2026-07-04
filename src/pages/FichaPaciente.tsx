@@ -17,6 +17,7 @@ import EscalasGeriatricas from './EscalasGeriatricas'
 import TendenciasPaciente from './TendenciasPaciente'
 import MedicacionPaciente from './MedicacionPaciente'
 import VacunasPaciente from './VacunasPaciente'
+import PlanCuidados from './PlanCuidados'
 import Evoluciones from './Evoluciones'
 import ImagenesPaciente from './ImagenesPaciente'
 import Presupuestos from './Presupuestos'
@@ -55,7 +56,7 @@ function iniciales(nombre: string): string {
 }
 
 type TabKey =
-  | 'datos' | 'clinica' | 'problemas' | 'valoracion' | 'escalas' | 'tendencias' | 'medicacion' | 'vacunas' | 'evoluciones' | 'presupuestos'
+  | 'datos' | 'clinica' | 'problemas' | 'valoracion' | 'escalas' | 'tendencias' | 'medicacion' | 'vacunas' | 'plan' | 'evoluciones' | 'presupuestos'
   | 'facturacion' | 'imagenes' | 'recetas' | 'documentos' | 'consentimientos' | 'caso'
 
 const TABS: { key: TabKey; label: string }[] = [
@@ -67,6 +68,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'tendencias', label: 'Tendencias' },
   { key: 'medicacion', label: 'Medicación' },
   { key: 'vacunas', label: 'Vacunación' },
+  { key: 'plan', label: 'Plan de cuidados' },
   { key: 'evoluciones', label: 'Evoluciones' },
   { key: 'presupuestos', label: 'Planes / Presupuestos' },
   { key: 'facturacion', label: 'Facturación' },
@@ -247,6 +249,7 @@ export default function FichaPaciente() {
             {tab === 'tendencias' && <TendenciasPaciente pacienteFijo={pacienteId} />}
             {tab === 'medicacion' && <MedicacionPaciente pacienteFijo={pacienteId} />}
             {tab === 'vacunas' && <VacunasPaciente pacienteFijo={pacienteId} />}
+            {tab === 'plan' && <PlanCuidados pacienteFijo={pacienteId} />}
             {tab === 'evoluciones' && <Evoluciones pacienteFijo={pacienteId} />}
             {tab === 'imagenes' && <ImagenesPaciente pacienteFijo={pacienteId} />}
             {tab === 'presupuestos' && <Presupuestos pacienteFijo={pacienteId} />}
