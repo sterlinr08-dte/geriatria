@@ -141,13 +141,17 @@ Qué se hizo, en concreto:
     fecha de revisión). Botón **Imprimir** documento con membrete del paciente y líneas de firma
     (paciente/representante y médico). Documento orientativo de planificación.
   - **Fase 3 (3.1–3.6) COMPLETA.**
-  - 🔨 3.7 **Mapa corporal 3D (EN CURSO):** maniquí neutro estilizado, rotable, para señalizar
-    las condiciones del paciente por zona (idea del dueño). **Paso 1 hecho:** `MapaCorporal3D.tsx`
-    (maniquí construido por CÓDIGO con react-three-fiber/drei/three — sin modelos externos:
-    cápsulas+esferas en tono de marca `#9fb4cf`, fondo de estudio, `OrbitControls` con
-    auto-rotación, `ContactShadows`) + `MapaCorporal.tsx` (envoltorio que **carga diferido** el
-    motor 3D vía `React.lazy`, así three.js NO pesa el bundle principal: queda en su propio chunk
-    ~224 KB gzip que solo se baja al abrir la pestaña **"Mapa corporal"** de la ficha).
+  - 🔨 3.7 **Mapa corporal 3D (EN CURSO):** **cuerpo humano real** rotable, para señalizar las
+    condiciones del paciente por zona (idea del dueño). **Paso 1 hecho:** `MapaCorporal3D.tsx`
+    carga un modelo GLB de cuerpo humano (`public/xbot.glb`, Mixamo "X Bot", uso libre; ~2.9 MB)
+    con react-three-fiber/drei/three; se **recolorea a un acabado clínico gris de marca**
+    (`#b9c6da`), se le **bajan los brazos** por código (venía en pose de T, rotación de huesos
+    `LeftArm/RightArm`) y se **centra+escala** (idempotente, resetea antes de medir con `Box3`).
+    `OrbitControls` con auto-rotación, `ContactShadows`, fondo de estudio. `MapaCorporal.tsx`
+    envuelve y **carga diferido** el motor 3D vía `React.lazy` → three.js queda en su propio chunk
+    (~245 KB gzip) que solo se baja al abrir la pestaña **"Mapa corporal"** de la ficha.
+    (Nota: primero se probó un maniquí construido por código; el dueño pidió cuerpo humano real.
+    Para volver a piel en vez de gris: cambiar el material en `MapaCorporal3D.tsx`.)
     **Pendiente:** marcadores automáticos desde CIE-10 (anclas anatómicas por sistema) + pines
     manuales (raycast al tocar el cuerpo) en tabla `marcadores_corporales`; impresión por snapshot.
     Deps nuevas: `three`, `@react-three/fiber`, `@react-three/drei`.
