@@ -140,7 +140,18 @@ Qué se hizo, en concreto:
     representante/decisor sustituto + teléfono, valores y deseos del paciente, observaciones,
     fecha de revisión). Botón **Imprimir** documento con membrete del paciente y líneas de firma
     (paciente/representante y médico). Documento orientativo de planificación.
-  - **Fase 3 COMPLETA** (3.1–3.6). Pendiente general: exequátur y ARS del Dr.; subdominio bonito.
+  - **Fase 3 (3.1–3.6) COMPLETA.**
+  - 🔨 3.7 **Mapa corporal 3D (EN CURSO):** maniquí neutro estilizado, rotable, para señalizar
+    las condiciones del paciente por zona (idea del dueño). **Paso 1 hecho:** `MapaCorporal3D.tsx`
+    (maniquí construido por CÓDIGO con react-three-fiber/drei/three — sin modelos externos:
+    cápsulas+esferas en tono de marca `#9fb4cf`, fondo de estudio, `OrbitControls` con
+    auto-rotación, `ContactShadows`) + `MapaCorporal.tsx` (envoltorio que **carga diferido** el
+    motor 3D vía `React.lazy`, así three.js NO pesa el bundle principal: queda en su propio chunk
+    ~224 KB gzip que solo se baja al abrir la pestaña **"Mapa corporal"** de la ficha).
+    **Pendiente:** marcadores automáticos desde CIE-10 (anclas anatómicas por sistema) + pines
+    manuales (raycast al tocar el cuerpo) en tabla `marcadores_corporales`; impresión por snapshot.
+    Deps nuevas: `three`, `@react-three/fiber`, `@react-three/drei`.
+  - Pendiente general: exequátur y ARS del Dr.; subdominio bonito.
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
   `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.
   - **SSO (parcial hecho):** en la base madre NEXUS (`tnwsgcxurfyuszxsewsn`), tabla

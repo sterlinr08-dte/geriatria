@@ -18,6 +18,7 @@ import TendenciasPaciente from './TendenciasPaciente'
 import MedicacionPaciente from './MedicacionPaciente'
 import VacunasPaciente from './VacunasPaciente'
 import PlanCuidados from './PlanCuidados'
+import MapaCorporal from './MapaCorporal'
 import Evoluciones from './Evoluciones'
 import ImagenesPaciente from './ImagenesPaciente'
 import Presupuestos from './Presupuestos'
@@ -56,13 +57,14 @@ function iniciales(nombre: string): string {
 }
 
 type TabKey =
-  | 'datos' | 'clinica' | 'problemas' | 'valoracion' | 'escalas' | 'tendencias' | 'medicacion' | 'vacunas' | 'plan' | 'evoluciones' | 'presupuestos'
+  | 'datos' | 'clinica' | 'problemas' | 'mapa' | 'valoracion' | 'escalas' | 'tendencias' | 'medicacion' | 'vacunas' | 'plan' | 'evoluciones' | 'presupuestos'
   | 'facturacion' | 'imagenes' | 'recetas' | 'documentos' | 'consentimientos' | 'caso'
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'datos', label: 'Datos personales' },
   { key: 'clinica', label: 'Ficha clínica' },
   { key: 'problemas', label: 'Problemas' },
+  { key: 'mapa', label: 'Mapa corporal' },
   { key: 'valoracion', label: 'Valoración' },
   { key: 'escalas', label: 'Escalas' },
   { key: 'tendencias', label: 'Tendencias' },
@@ -244,6 +246,7 @@ export default function FichaPaciente() {
             {tab === 'datos' && <TabDatos cliente={cliente} edad={edad} />}
             {tab === 'clinica' && <HistoriaClinica pacienteFijo={pacienteId} />}
             {tab === 'problemas' && <ProblemasPaciente pacienteFijo={pacienteId} />}
+            {tab === 'mapa' && <MapaCorporal pacienteFijo={pacienteId} />}
             {tab === 'valoracion' && <ValoracionGeriatrica pacienteFijo={pacienteId} />}
             {tab === 'escalas' && <EscalasGeriatricas pacienteFijo={pacienteId} />}
             {tab === 'tendencias' && <TendenciasPaciente pacienteFijo={pacienteId} />}
