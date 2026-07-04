@@ -124,7 +124,15 @@ Qué se hizo, en concreto:
     sistema) con `buscarCIE10()` (por código o descripción, sin acentos); el buscador autocompleta
     código+diagnóstico y también se puede escribir libre. Botón **Imprimir lista de problemas**
     (activos + resueltos, con membrete del paciente).
-  - ⏳ Próximo: registro de vacunación, plan de cuidados/directivas anticipadas.
+  - ✅ 3.5 **Registro de vacunación** (`lib/vacunas.ts` + `VacunasPaciente.tsx`, pestaña
+    "Vacunación" en la ficha, tabla `vacunas_paciente` con RLS): registro de dosis (vacuna,
+    dosis, fecha, lote, próxima), **panel de próximas dosis/refuerzos** (en X días / hoy /
+    vencida), **esquema recomendado del adulto mayor** (`VACUNAS`: influenza, neumococo
+    conjugada y polisacárida, herpes zóster, Td/Tdap, COVID-19, hepatitis B) con chips de las
+    aún **pendientes de registrar** (click → alta prellenada), botón para sugerir la próxima
+    dosis según el esquema y **impresión del carné de vacunación**. `detectarVacuna()` empareja
+    el nombre libre con el esquema. Orientativo; el médico decide según el caso.
+  - ⏳ Próximo: plan de cuidados/directivas anticipadas.
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
   `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.
   - **SSO (parcial hecho):** en la base madre NEXUS (`tnwsgcxurfyuszxsewsn`), tabla
