@@ -21,9 +21,10 @@ export const NIVELES: NivelDef[] = [
 export const nivelDef = (k?: string | null): NivelDef => NIVELES.find((n) => n.key === k) ?? NIVELES[1]
 
 // Figura del cuerpo según el sexo del paciente.
+// Femenino → mujer; todo lo demás (Masculino, Otro, sin especificar) → hombre.
 export function figuraPorSexo(sexo?: string | null): string {
-  const s = (sexo ?? '').trim().toLowerCase()
-  const femenino = s.startsWith('f') || s.includes('mujer') || s.includes('femen')
+  const s = (sexo ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
+  const femenino = s === 'f' || s.startsWith('fem') || s.includes('muj')
   return femenino ? '/cuerpo-mujer.png' : '/cuerpo-hombre.png'
 }
 
