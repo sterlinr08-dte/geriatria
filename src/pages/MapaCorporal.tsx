@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { PersonStanding, Printer, Save, Trash2, Sparkles } from 'lucide-react'
+import { PersonStanding, Printer, Save, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { Cliente } from '../types'
 import { fechaCorta, hoyISO } from '../lib/format'
@@ -68,12 +68,43 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
 
   async function cargar(pid: string) {
     setLoading(true)
-    const [{ data: c }, { data: ms }] = await Promise.all([
+    const [{ data: c }, { data: ms }, { data: probs }] = await Promise.all([
       supabase.from('clientes').select('*').eq('id', pid).single(),
       supabase.from('mapa_marcadores').select('*').eq('cliente_id', pid).order('created_at'),
+      supabase.from('problemas_paciente').select('codigo,descripcion,cronico,activo').eq('cliente_id', pid),
     ])
+    let marcs = (ms as Marca[]) ?? []
+
+    // Sincronización automática: los diagnósticos activos (CIE-10) aparecen solos
+    // como puntos 'auto'; si un diagnóstico se resuelve/quita, su punto se borra.
+    // Los puntos que el médico pone a mano ('manual') no se tocan.
+    const clave = (codigo?: string | null, texto?: string | null) => (codigo?.trim() || texto?.trim() || '').toLowerCase()
+    const activos = ((probs as any[]) ?? []).filter((p) => p.activo)
+    const autos = marcs.filter((m) => m.origen === 'auto')
+    const activosClaves = new Map(activos.map((p) => [clave(p.codigo, p.descripcion), p]))
+    const autoClaves = new Set(autos.map((m) => clave(m.codigo, m.texto)))
+
+    const faltan = activos.filter((p) => !autoClaves.has(clave(p.codigo, p.descripcion)))
+    const sobran = autos.filter((m) => !activosClaves.has(clave(m.codigo, m.texto)))
+
+    let cambio = false
+    if (faltan.length) {
+      const filas = faltan.map((p, i) => {
+        const [x, y] = posicionSugerida(p.codigo, p.descripcion, autos.length + i)
+        return { cliente_id: pid, x, y, nivel: p.cronico ? 'moderado' : 'leve', texto: p.descripcion, vista: 'frontal', origen: 'auto', codigo: p.codigo }
+      })
+      await supabase.from('mapa_marcadores').insert(filas); cambio = true
+    }
+    if (sobran.length) {
+      await supabase.from('mapa_marcadores').delete().in('id', sobran.map((m) => m.id)); cambio = true
+    }
+    if (cambio) {
+      const { data: ms2 } = await supabase.from('mapa_marcadores').select('*').eq('cliente_id', pid).order('created_at')
+      marcs = (ms2 as Marca[]) ?? []
+    }
+
     setPaciente((c as Cliente) ?? null)
-    setMarcadores((ms as Marca[]) ?? [])
+    setMarcadores(marcs)
     setLoading(false)
   }
   useEffect(() => {
@@ -120,25 +151,6 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
     await supabase.from('mapa_marcadores').delete().eq('id', editId)
     setMarcadores((prev) => prev.filter((m) => m.id !== editId))
     setEditId(null)
-  }
-
-  async function sugerir() {
-    const { data } = await supabase.from('problemas_paciente')
-      .select('codigo,descripcion,cronico,activo').eq('cliente_id', pacienteId)
-    const activos = (data ?? []).filter((p: any) => p.activo)
-    if (!activos.length) return alert('El paciente no tiene diagnósticos activos en la Lista de problemas (CIE-10).')
-    const existentes = new Set(marcadores.map((m) => (m.texto ?? '').trim().toLowerCase()))
-    const nuevos = activos.filter((p: any) => !existentes.has((p.descripcion ?? '').trim().toLowerCase()))
-    if (!nuevos.length) return alert('Los diagnósticos activos ya están marcados en el mapa.')
-    if (!confirm(`Se agregarán ${nuevos.length} punto(s) sugerido(s) desde los diagnósticos, en la vista frontal. Luego puedes moverlos, editarlos o borrarlos.`)) return
-    const filas = nuevos.map((p: any, i: number) => {
-      const [x, y] = posicionSugerida(p.codigo, p.descripcion, i)
-      return { cliente_id: pacienteId, x, y, nivel: p.cronico ? 'moderado' : 'leve', texto: p.descripcion, vista: 'frontal' }
-    })
-    const { error } = await supabase.from('mapa_marcadores').insert(filas)
-    if (error) return alert('Error al sugerir: ' + error.message)
-    setVista('frontal')
-    cargar(pacienteId)
   }
 
   function imprimir() {
@@ -210,11 +222,8 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
       ) : (
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm text-slate-500">Toca el cuerpo para poner un punto donde notaste algo. Arrástralo para moverlo; tócalo para escribir el hallazgo.</p>
-            <div className="flex gap-2">
-              <button className="btn-ghost" onClick={sugerir} title="Sugerir puntos desde la lista de problemas (CIE-10)"><Sparkles size={16} /> Sugerir</button>
-              {marcadores.length > 0 && <button className="btn-ghost" onClick={imprimir}><Printer size={16} /> Reporte</button>}
-            </div>
+            <p className="text-sm text-slate-500">Los diagnósticos activos aparecen solos. Toca el cuerpo para agregar otro hallazgo; arrastra para mover, toca un punto para editarlo.</p>
+            {marcadores.length > 0 && <button className="btn-ghost" onClick={imprimir}><Printer size={16} /> Reporte</button>}
           </div>
 
           {/* Vista frontal / posterior */}

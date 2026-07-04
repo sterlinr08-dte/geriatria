@@ -165,9 +165,13 @@ Qué se hizo, en concreto:
     - **three.js/react-three-fiber ya NO se importan** (bundle liviano). Deps siguen en package.json.
     - ✅ Hallazgos en **cuadros laterales** (izq/der según el punto) con línea al punto, ancho
       moderado y pegados al cuerpo (`MapaCorporal2D` calcula posiciones con `ResizeObserver`).
-    - ✅ **Autollenar desde CIE-10:** botón **"Sugerir"** crea puntos a partir de los diagnósticos
-      activos de la Lista de problemas, ubicados por sistema (`posicionSugerida` + `grupoPorCodigo`),
-      en la vista frontal; el médico luego los mueve/edita/borra.
+    - ✅ **Autollenar desde CIE-10 (AUTOMÁTICO + sincronizado):** al abrir el mapa, `cargar()`
+      sincroniza puntos `origen='auto'` con los diagnósticos activos de la Lista de problemas
+      (inserta los que faltan por sistema con `posicionSugerida`+`grupoPorCodigo`, borra los de
+      diagnósticos ya resueltos/quitados). Columnas `origen`('manual'|'auto') y `codigo` en
+      `mapa_marcadores`; los puntos manuales del médico no se tocan. (Nota: si el médico borra un
+      punto 'auto' con el diagnóstico aún activo, reaparece al reabrir; para quitarlo, resolver el
+      diagnóstico en Problemas.)
 - **Fase 3.8 — "Chart Advisor" geriátrico (hecho):**
   - ✅ **Panel de alertas + índice de fragilidad** en la ficha (`components/ResumenAlertas.tsx` +
     `lib/fragilidad.ts`): resumen arriba de la ficha con la **fragilidad** (robusto/leve/moderada/

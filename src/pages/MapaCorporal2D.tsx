@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { nivelDef, NivelKey } from '../lib/mapaCorporal'
 
-export interface Marca { id: string; x: number; y: number; nivel: NivelKey; texto?: string | null; vista?: string }
+export interface Marca { id: string; x: number; y: number; nivel: NivelKey; texto?: string | null; vista?: string; origen?: string; codigo?: string | null }
 
 interface Pin { id: string; idx: number; x: number; y: number; color: string }
 interface Card { id: string; idx: number; x: number; y: number; w: number; side: 'left' | 'right'; color: string; texto: string; nivel: NivelKey }
