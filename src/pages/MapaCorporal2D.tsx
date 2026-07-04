@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 import { nivelDef, NivelKey } from '../lib/mapaCorporal'
 
-export interface Marca { id: string; x: number; y: number; nivel: NivelKey; texto?: string | null }
+export interface Marca { id: string; x: number; y: number; nivel: NivelKey; texto?: string | null; vista?: string }
 
 // Figura del paciente con marcadores LIBRES: el médico toca para colocar un punto,
 // lo arrastra donde quiera, y lo toca para escribir el hallazgo.

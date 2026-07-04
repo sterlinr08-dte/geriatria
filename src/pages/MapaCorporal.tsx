@@ -3,7 +3,7 @@ import { PersonStanding, Printer, Save, Trash2 } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { Cliente } from '../types'
 import { fechaCorta, hoyISO } from '../lib/format'
-import { NIVELES, nivelDef, figuraPorSexo, DESCARGO_MAPA, NivelKey } from '../lib/mapaCorporal'
+import { NIVELES, nivelDef, figura as figuraSrc, sexoKey, TIENE_ESPALDA, DESCARGO_MAPA, NivelKey, Vista } from '../lib/mapaCorporal'
 import PageHeader from '../components/PageHeader'
 import Cargando from '../components/Cargando'
 import Modal from '../components/Modal'
@@ -19,6 +19,7 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
   const [editId, setEditId] = useState<string | null>(null)
   const [form, setForm] = useState<{ nivel: NivelKey; texto: string }>({ nivel: 'moderado', texto: '' })
   const [saving, setSaving] = useState(false)
+  const [vista, setVista] = useState<Vista>('frontal')
 
   useEffect(() => {
     if (pacienteFijo != null) return
@@ -41,11 +42,16 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
     cargar(pacienteId)
   }, [pacienteId])
 
-  const figura = figuraPorSexo(paciente?.sexo)
+  const sexKey = sexoKey(paciente?.sexo)
+  const puedeEspalda = TIENE_ESPALDA[sexKey]
+  // Si el sexo no tiene espalda, forzar vista frontal.
+  useEffect(() => { if (!puedeEspalda && vista !== 'frontal') setVista('frontal') }, [puedeEspalda, vista])
+  const src = figuraSrc(paciente?.sexo, vista)
+  const marcadoresVista = marcadores.filter((m) => (m.vista ?? 'frontal') === vista)
 
   async function agregar(x: number, y: number) {
     const { data, error } = await supabase.from('mapa_marcadores')
-      .insert({ cliente_id: pacienteId, x, y, nivel: 'moderado', texto: null }).select().single()
+      .insert({ cliente_id: pacienteId, x, y, nivel: 'moderado', texto: null, vista }).select().single()
     if (error) return alert('Error al agregar: ' + error.message)
     const m = data as Marca
     setMarcadores((prev) => [...prev, m])
@@ -78,27 +84,38 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
   }
 
   function imprimir() {
-    const marcas = marcadores.map((m, i) => {
-      const nd = nivelDef(m.nivel)
-      return `<span style="position:absolute;left:${m.x}%;top:${m.y}%;transform:translate(-50%,-50%);width:22px;height:22px;border-radius:50%;background:${nd.color};border:2px solid #fff;color:#fff;font:700 10px system-ui;display:flex;align-items:center;justify-content:center">${i + 1}</span>`
-    }).join('')
-    const figuraHtml = `<div style="position:relative;width:220px;margin:0 auto 14px"><img src="${figura}" style="width:100%;display:block">${marcas}</div>`
-    const filas = marcadores.map((m, i) => {
-      const nd = nivelDef(m.nivel)
-      return `<tr>
-        <td style="text-align:center;font-weight:700">${i + 1}</td>
-        <td><span style="display:inline-block;padding:2px 8px;border-radius:99px;background:${nd.color}22;color:${nd.color};font-weight:700;font-size:11px">${nd.label}</span></td>
-        <td>${m.texto ? m.texto.replace(/</g, '&lt;') : '—'}</td>
-      </tr>`
-    }).join('')
+    const bloque = (v: Vista) => {
+      const ms = marcadores.filter((m) => (m.vista ?? 'frontal') === v)
+      if (!ms.length) return ''
+      const marcas = ms.map((m, i) => {
+        const nd = nivelDef(m.nivel)
+        return `<span style="position:absolute;left:${m.x}%;top:${m.y}%;transform:translate(-50%,-50%);width:20px;height:20px;border-radius:50%;background:${nd.color};border:2px solid #fff;color:#fff;font:700 10px system-ui;display:flex;align-items:center;justify-content:center">${i + 1}</span>`
+      }).join('')
+      const fig = `<div style="position:relative;width:180px;flex:none"><img src="${figuraSrc(paciente?.sexo, v)}" style="width:100%;display:block">${marcas}</div>`
+      const filas = ms.map((m, i) => {
+        const nd = nivelDef(m.nivel)
+        return `<tr>
+          <td style="text-align:center;font-weight:700">${i + 1}</td>
+          <td><span style="display:inline-block;padding:2px 8px;border-radius:99px;background:${nd.color}22;color:${nd.color};font-weight:700;font-size:11px">${nd.label}</span></td>
+          <td>${m.texto ? m.texto.replace(/</g, '&lt;') : '—'}</td>
+        </tr>`
+      }).join('')
+      return `<h2>Vista ${v === 'frontal' ? 'frontal' : 'posterior'}</h2>
+        <div class="bloque">${fig}
+          <table><thead><tr><th>#</th><th>Nivel</th><th>Hallazgo</th></tr></thead><tbody>${filas}</tbody></table>
+        </div>`
+    }
+    const cuerpo = bloque('frontal') + bloque('posterior')
     const w = window.open('', '_blank'); if (!w) return
     w.document.write(`<!doctype html><html lang="es"><head><meta charset="utf-8">
       <title>Mapa del cuerpo humano — Evaluación Geriátrica Integral</title>
       <style>
         body{font-family:system-ui,-apple-system,Arial,sans-serif;color:#1e293b;margin:32px}
         h1{font-size:18px;margin:0 0 2px;color:#1e3a8a;text-align:center}
+        h2{font-size:13px;margin:18px 0 6px;color:#456f9c;text-transform:uppercase;letter-spacing:.04em}
         .st{font-size:13px;color:#475569;text-align:center;margin-bottom:2px}
         .sub{color:#64748b;font-size:13px;text-align:center;margin-bottom:14px}
+        .bloque{display:flex;gap:16px;align-items:flex-start}
         table{width:100%;border-collapse:collapse;font-size:13px}
         th,td{border:1px solid #e2e8f0;padding:6px 8px;text-align:left;vertical-align:top}
         th{background:#eef4fa;color:#3a5c82;font-size:11px;text-transform:uppercase;letter-spacing:.03em}
@@ -107,9 +124,7 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
       <h1>MAPA DEL CUERPO HUMANO</h1>
       <div class="st">Evaluación Geriátrica Integral</div>
       <div class="sub">${paciente?.nombre ?? ''}${paciente?.cedula ? ' · Céd. ' + paciente.cedula : ''} · ${fechaCorta(hoyISO())}</div>
-      ${marcadores.length ? figuraHtml : ''}
-      <table><thead><tr><th>#</th><th>Nivel</th><th>Hallazgo</th></tr></thead>
-      <tbody>${filas || '<tr><td colspan="3" style="color:#94a3b8">Sin hallazgos registrados.</td></tr>'}</tbody></table>
+      ${cuerpo || '<p style="text-align:center;color:#94a3b8">Sin hallazgos registrados.</p>'}
       <div class="pie">${DESCARGO_MAPA}</div>
       </body></html>`)
     w.document.close(); w.focus(); w.print()
@@ -141,7 +156,24 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
             {marcadores.length > 0 && <button className="btn-ghost" onClick={imprimir}><Printer size={16} /> Reporte</button>}
           </div>
 
-          <MapaCorporal2D src={figura} marcadores={marcadores} onAdd={agregar} onMove={mover} onOpen={abrir} />
+          {/* Vista frontal / posterior */}
+          <div className="flex justify-center">
+            <div className="inline-flex rounded-xl border border-slate-200 bg-white p-1 text-sm font-semibold">
+              {([['frontal', 'Frontal'], ['posterior', 'Posterior']] as [Vista, string][]).map(([v, lbl]) => {
+                const disabled = v === 'posterior' && !puedeEspalda
+                const activo = vista === v
+                return (
+                  <button key={v} disabled={disabled} onClick={() => setVista(v)}
+                    title={disabled ? 'Espalda no disponible para esta figura' : ''}
+                    className={`rounded-lg px-4 py-1.5 transition ${activo ? 'bg-brand-500 text-white shadow' : disabled ? 'text-slate-300' : 'text-slate-600 hover:bg-brand-50'}`}>
+                    {lbl}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          <MapaCorporal2D src={src} marcadores={marcadoresVista} onAdd={agregar} onMove={mover} onOpen={abrir} />
 
           {/* Leyenda de niveles */}
           <div className="flex flex-wrap gap-2">
@@ -152,11 +184,11 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
             ))}
           </div>
 
-          {/* Lista de hallazgos */}
-          {marcadores.length > 0 && (
+          {/* Lista de hallazgos de la vista actual */}
+          {marcadoresVista.length > 0 && (
             <div className="space-y-2">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Hallazgos ({marcadores.length})</h3>
-              {marcadores.map((m, i) => {
+              <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Hallazgos — {vista === 'frontal' ? 'frontal' : 'posterior'} ({marcadoresVista.length})</h3>
+              {marcadoresVista.map((m, i) => {
                 const nd = nivelDef(m.nivel)
                 return (
                   <button key={m.id} onClick={() => abrir(m.id)}

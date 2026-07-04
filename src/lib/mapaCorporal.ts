@@ -20,12 +20,29 @@ export const NIVELES: NivelDef[] = [
 
 export const nivelDef = (k?: string | null): NivelDef => NIVELES.find((n) => n.key === k) ?? NIVELES[1]
 
-// Figura del cuerpo según el sexo del paciente.
-// Femenino → mujer; todo lo demás (Masculino, Otro, sin especificar) → hombre.
-export function figuraPorSexo(sexo?: string | null): string {
+// Vista del cuerpo: frontal (delante) o posterior (espalda).
+export type Vista = 'frontal' | 'posterior'
+export type SexoKey = 'hombre' | 'mujer'
+
+// Femenino -> mujer; todo lo demas (Masculino, sin especificar) -> hombre.
+export function sexoKey(sexo?: string | null): SexoKey {
   const s = (sexo ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase()
   const femenino = s === 'f' || s.startsWith('fem') || s.includes('muj')
-  return femenino ? '/cuerpo-mujer.png' : '/cuerpo-hombre.png'
+  return femenino ? 'mujer' : 'hombre'
+}
+
+const FIGURAS: Record<SexoKey, Record<Vista, string>> = {
+  hombre: { frontal: '/cuerpo-hombre.png', posterior: '/cuerpo-hombre-espalda.png' },
+  mujer: { frontal: '/cuerpo-mujer.png', posterior: '/cuerpo-mujer-espalda.png' },
+}
+
+// Ambos sexos tienen imagen de espalda (frontal y posterior).
+export const TIENE_ESPALDA: Record<SexoKey, boolean> = { hombre: true, mujer: true }
+
+export function figura(sexo?: string | null, vista: Vista = 'frontal'): string {
+  const k = sexoKey(sexo)
+  const v = vista === 'posterior' && !TIENE_ESPALDA[k] ? 'frontal' : vista
+  return FIGURAS[k][v]
 }
 
 export const DESCARGO_MAPA =
