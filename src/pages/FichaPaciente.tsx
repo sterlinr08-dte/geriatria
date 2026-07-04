@@ -12,6 +12,7 @@ import Cargando from '../components/Cargando'
 import SelectorPaciente from '../components/SelectorPaciente'
 import HistoriaClinica from './HistoriaClinica'
 import ValoracionGeriatrica from './ValoracionGeriatrica'
+import EscalasGeriatricas from './EscalasGeriatricas'
 import Evoluciones from './Evoluciones'
 import ImagenesPaciente from './ImagenesPaciente'
 import Presupuestos from './Presupuestos'
@@ -50,13 +51,14 @@ function iniciales(nombre: string): string {
 }
 
 type TabKey =
-  | 'datos' | 'clinica' | 'valoracion' | 'evoluciones' | 'presupuestos'
+  | 'datos' | 'clinica' | 'valoracion' | 'escalas' | 'evoluciones' | 'presupuestos'
   | 'facturacion' | 'imagenes' | 'recetas' | 'documentos' | 'consentimientos' | 'caso'
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'datos', label: 'Datos personales' },
   { key: 'clinica', label: 'Ficha clínica' },
   { key: 'valoracion', label: 'Valoración' },
+  { key: 'escalas', label: 'Escalas' },
   { key: 'evoluciones', label: 'Evoluciones' },
   { key: 'presupuestos', label: 'Planes / Presupuestos' },
   { key: 'facturacion', label: 'Facturación' },
@@ -232,6 +234,7 @@ export default function FichaPaciente() {
             {tab === 'datos' && <TabDatos cliente={cliente} edad={edad} />}
             {tab === 'clinica' && <HistoriaClinica pacienteFijo={pacienteId} />}
             {tab === 'valoracion' && <ValoracionGeriatrica pacienteFijo={pacienteId} />}
+            {tab === 'escalas' && <EscalasGeriatricas pacienteFijo={pacienteId} />}
             {tab === 'evoluciones' && <Evoluciones pacienteFijo={pacienteId} />}
             {tab === 'imagenes' && <ImagenesPaciente pacienteFijo={pacienteId} />}
             {tab === 'presupuestos' && <Presupuestos pacienteFijo={pacienteId} />}
