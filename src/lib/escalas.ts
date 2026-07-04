@@ -231,6 +231,38 @@ export const ESCALAS: DefEscala[] = [
       : { texto: 'Problema social establecido', tono: 'rose' },
     nota: 'Puntaje 5–25. A mayor puntaje, peor situación socio-familiar.',
   },
+
+  // ---------------- MINI-COG (cribado cognitivo) ----------------
+  {
+    key: 'minicog',
+    nombre: 'Mini-Cog (cribado cognitivo)',
+    sigla: 'Mini-Cog',
+    dominio: 'Cognitivo — cribado rápido',
+    descripcion: 'Cribado breve de deterioro cognitivo: recuerdo de 3 palabras + test del reloj.',
+    items: [
+      {
+        texto: 'Recuerdo diferido de 3 palabras (p. ej. Plátano · Amanecer · Silla): ¿cuántas recuerda?',
+        opciones: [
+          { label: '3 palabras', puntos: 3 },
+          { label: '2 palabras', puntos: 2 },
+          { label: '1 palabra', puntos: 1 },
+          { label: 'Ninguna', puntos: 0 },
+        ],
+      },
+      {
+        texto: 'Test del reloj (dibujar un reloj con todos los números y las manecillas en las 11:10)',
+        opciones: [
+          { label: 'Normal (números y hora correctos)', puntos: 2 },
+          { label: 'Anormal', puntos: 0 },
+        ],
+      },
+    ],
+    interpretar: (t) => t >= 3
+      ? { texto: 'Cribado negativo (normal)', tono: 'emerald' }
+      : { texto: 'Cribado positivo — posible deterioro cognitivo', tono: 'rose' },
+    nota: 'Puntaje 0–5. Se dictan 3 palabras, se hace el test del reloj y luego se pide recordarlas. ' +
+      'Puntaje ≤ 2 = cribado positivo: conviene una valoración cognitiva más completa.',
+  },
 ]
 
 export function escalaPorKey(key: string): DefEscala | undefined {
