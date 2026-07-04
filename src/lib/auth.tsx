@@ -60,17 +60,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   useEffect(() => {
+    let done = false
+    const RELOAD_KEY = 'geriatria-recarga-sesion'
+
+    const listo = () => {
+      if (done) return
+      done = true
+      clearTimeout(watchdog)
+      sessionStorage.removeItem(RELOAD_KEY)
+      setLoading(false)
+    }
+
+    // Red de seguridad: al reabrir la app tras un rato inactivo, Supabase a veces
+    // deja la sesión "colgada" (lock del navegador) y getSession() nunca responde,
+    // por lo que la pantalla se queda cargando. Si en 8s no resolvió, recargamos
+    // UNA vez (equivale a "actualizar" a mano); si tras recargar sigue, quitamos
+    // el spinner para no dejar la app trancada.
+    const watchdog = setTimeout(() => {
+      if (done) return
+      if (!sessionStorage.getItem(RELOAD_KEY)) {
+        sessionStorage.setItem(RELOAD_KEY, '1')
+        window.location.reload()
+      } else {
+        setLoading(false)
+      }
+    }, 8000)
+
     supabase.auth.getSession().then(async ({ data }) => {
       setSession(data.session)
-      if (data.session) await cargarPerfil(data.session.user.id)
-      setLoading(false)
-    })
+      if (data.session) { try { await cargarPerfil(data.session.user.id) } catch { /* no bloquear el arranque */ } }
+      listo()
+    }).catch(listo)
+
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, s) => {
       setSession(s)
-      if (s) await cargarPerfil(s.user.id)
+      if (s) { try { await cargarPerfil(s.user.id) } catch { /* ignore */ } }
       else setPerfil(null)
+      listo()
     })
-    return () => sub.subscription.unsubscribe()
+    return () => { clearTimeout(watchdog); sub.subscription.unsubscribe() }
   }, [cargarPerfil])
 
   async function signIn(email: string, password: string) {
