@@ -105,8 +105,11 @@ Qué se hizo, en concreto:
     pestaña "Escalas" en la ficha, tabla `escala_resultados` con histórico): Barthel, Lawton,
     Yesavage GDS-15, Pfeiffer, MNA-SF, Downton, Gijón. Cuestionario → puntaje e interpretación
     automáticos, guardando cada aplicación (habilita gráficos de tendencia).
-  - ⏳ Próximo: gráficos de tendencia (peso/TA/glucosa/puntajes en el tiempo), gestión de
-    medicación/polifarmacia (Beers/STOPP-START), lista de problemas CIE-10, vacunación.
+  - ✅ 3.2 **Gráficos de tendencia** (`TendenciasPaciente.tsx`, pestaña "Tendencias"): líneas
+    SVG livianas (sin librerías) de signos vitales (peso, IMC, TA sistólica/diastólica, glucosa,
+    FC, SAT) y de los puntajes de escalas en el tiempo. Colores de marca, verificado visualmente.
+  - ⏳ Próximo: gestión de medicación/polifarmacia (Beers/STOPP-START), lista de problemas
+    CIE-10, registro de vacunación, plan de cuidados/directivas anticipadas.
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
   `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.
   - **SSO (parcial hecho):** en la base madre NEXUS (`tnwsgcxurfyuszxsewsn`), tabla
