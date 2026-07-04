@@ -10,6 +10,7 @@ import { codigoCliente, money, fechaCorta } from '../lib/format'
 import PageHeader from '../components/PageHeader'
 import Cargando from '../components/Cargando'
 import SelectorPaciente from '../components/SelectorPaciente'
+import ResumenAlertas from '../components/ResumenAlertas'
 import HistoriaClinica from './HistoriaClinica'
 import ProblemasPaciente from './ProblemasPaciente'
 import ValoracionGeriatrica from './ValoracionGeriatrica'
@@ -225,6 +226,9 @@ export default function FichaPaciente() {
               </div>
             </div>
           </div>
+
+          {/* Resumen inteligente: fragilidad + alertas */}
+          <ResumenAlertas pacienteId={pacienteId} />
 
           {/* Pestañas */}
           <div className="flex gap-1 overflow-x-auto border-b border-slate-200">
