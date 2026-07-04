@@ -152,9 +152,19 @@ Qué se hizo, en concreto:
     (~245 KB gzip) que solo se baja al abrir la pestaña **"Mapa corporal"** de la ficha.
     (Nota: primero se probó un maniquí construido por código; el dueño pidió cuerpo humano real.
     Para volver a piel en vez de gris: cambiar el material en `MapaCorporal3D.tsx`.)
-    **Pendiente:** marcadores automáticos desde CIE-10 (anclas anatómicas por sistema) + pines
-    manuales (raycast al tocar el cuerpo) en tabla `marcadores_corporales`; impresión por snapshot.
-    Deps nuevas: `three`, `@react-three/fiber`, `@react-three/drei`.
+    **Paso 2 hecho (módulo funcional, calcado del mockup del Dr. "Mapa del cuerpo humano —
+    Evaluación Geriátrica Integral"):** `lib/mapaCorporal.ts` define **11 zonas** (cabeza/nervioso,
+    ojos, oídos, boca/garganta, corazón, pulmones, digestivo, urinario, músculoesquelético,
+    piel, pies) con su **checklist de síntomas** y su **ancla 3D**; 4 **niveles de alerta**
+    (Sin alteraciones/Leve/Moderado/Severo, verde/amarillo/naranja/rojo). Cada zona con nivel
+    **enciende el cuerpo como "heatmap"** (sprite aditivo del color del nivel en el ancla; los
+    puntos de identidad de zona siempre visibles y **tocables** → raycast `onPointerDown`).
+    `MapaCorporal.tsx`: cuerpo 3D + lista de 11 zonas + editor (nivel + checklist + nota) que
+    hace **upsert por (cliente_id, zona)** en tabla `mapa_corporal` (jsonb `sintomas`, RLS) +
+    leyenda + **Reporte imprimible** (captura del canvas con `preserveDrawingBuffer` + tabla de
+    hallazgos por zona, con el descargo). Deps: `three`, `@react-three/fiber`, `@react-three/drei`.
+    **Pendiente (mejoras):** autollenado desde CIE-10, línea de tiempo por visita, pines manuales
+    de punto exacto.
   - Pendiente general: exequátur y ARS del Dr.; subdominio bonito.
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
   `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.
