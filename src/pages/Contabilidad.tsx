@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { TrendingUp, TrendingDown, Receipt, ShoppingCart, Wallet, Users, Scale, Boxes, Coins } from 'lucide-react'
+import { TrendingUp, TrendingDown, Receipt, ShoppingCart, Wallet, Users, Scale, Boxes, Coins, Printer } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { money } from '../lib/format'
+import { imprimirTabla } from '../lib/reportes'
+import { useNegocio } from '../lib/negocio'
 import PageHeader from '../components/PageHeader'
 import Cargando from '../components/Cargando'
 
@@ -32,6 +34,7 @@ export default function Contabilidad() {
   const [mes, setMes] = useState(mesActual())
   const [r, setR] = useState<Resumen>({ ingresos: 0, facturasPendientes: 0, gastos: 0, compras: 0, nomina: 0, gananciaProductos: 0, inventarioValor: 0 })
   const [loading, setLoading] = useState(true)
+  const { negocio } = useNegocio()
 
   useEffect(() => {
     ;(async () => {
@@ -74,6 +77,27 @@ export default function Contabilidad() {
 
   const egresos = r.gastos + r.compras + r.nomina
   const utilidad = r.ingresos - egresos
+  const facturado = r.ingresos + r.facturasPendientes
+
+  function imprimir() {
+    const nombreMes = new Date(mes + '-01T00:00:00').toLocaleDateString('es-DO', { month: 'long', year: 'numeric' })
+    imprimirTabla({
+      negocio,
+      titulo: 'Ingresos y resumen del mes',
+      subtitulo: `${nombreMes} · Facturado: ${money(facturado)} · Cobrado: ${money(r.ingresos)} · Pendiente: ${money(r.facturasPendientes)}`,
+      columnas: [{ label: 'Concepto' }, { label: 'Monto', align: 'right' }],
+      filas: [
+        ['Facturado del mes (emitido)', money(facturado)],
+        ['Cobrado (facturas pagadas)', money(r.ingresos)],
+        ['Pendiente de cobro', money(r.facturasPendientes)],
+        ['Compras', '− ' + money(r.compras)],
+        ['Gastos', '− ' + money(r.gastos)],
+        ['Pagos a empleados', '− ' + money(r.nomina)],
+        ['Ganancia en productos', money(r.gananciaProductos)],
+      ],
+      pie: ['Utilidad neta', money(utilidad)],
+    })
+  }
 
   const filas = [
     { label: 'Ingresos (facturas pagadas)', valor: r.ingresos, icon: Receipt, color: 'text-emerald-600 bg-emerald-50', signo: '+' },
@@ -87,13 +111,37 @@ export default function Contabilidad() {
       <PageHeader
         title="Contabilidad"
         subtitle="Resumen de ingresos y egresos por mes"
-        action={<input type="month" className="input w-auto" value={mes} onChange={(e) => setMes(e.target.value)} />}
+        action={
+          <div className="flex items-center gap-2">
+            <input type="month" className="input w-auto" value={mes} onChange={(e) => setMes(e.target.value)} />
+            <button className="btn-ghost" onClick={imprimir}><Printer size={16} /> Imprimir</button>
+          </div>
+        }
       />
 
       {loading ? (
         <Cargando />
       ) : (
         <>
+          {/* Ingresos del mes: facturado / cobrado / pendiente */}
+          <div className="mb-6 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Ingresos del mes</p>
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div>
+                <p className="text-xl font-bold text-slate-800">{money(facturado)}</p>
+                <p className="text-xs text-slate-500">Facturado</p>
+              </div>
+              <div>
+                <p className="text-xl font-bold text-emerald-600">{money(r.ingresos)}</p>
+                <p className="text-xs text-slate-500">Cobrado</p>
+              </div>
+              <div>
+                <p className="text-xl font-bold text-amber-600">{money(r.facturasPendientes)}</p>
+                <p className="text-xs text-slate-500">Pendiente</p>
+              </div>
+            </div>
+          </div>
+
           <div className="mb-6 grid gap-4 sm:grid-cols-3">
             <div className="card">
               <div className="mb-2 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600"><TrendingUp size={20} /></div>

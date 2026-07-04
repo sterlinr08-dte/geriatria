@@ -95,7 +95,11 @@ Qué se hizo, en concreto:
   - ✅ 2.4–2.6 **Valoración Geriátrica Integral**: tabla `valoracion_geriatrica` (escalas +
     secciones narrativas + examen físico) y pestaña **"Valoración"** (`ValoracionGeriatrica.tsx`)
     con interpretación automática de escalas y **botón Imprimir historia clínica** (calca su Word).
-  - ⏳ Falta: **recordatorio de citas por WhatsApp** y **reporte de ingresos del mes**.
+  - ✅ 2.7 **Reporte de ingresos del mes** imprimible en `Contabilidad` (facturado/cobrado/
+    pendiente + egresos + utilidad; usa `imprimirTabla` de `reportes.ts`).
+  - ✅ **Recordatorio de citas por WhatsApp**: ya funcional (click-to-send) en `Citas` y
+    `Controles` (`mensajeria.ts` arma el mensaje con `wa_plantilla`).
+  - Fase 2 COMPLETA. (Pendiente general: exequátur y ARS del Dr., cuando los envíe.)
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
   `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.
   - **SSO (parcial hecho):** en la base madre NEXUS (`tnwsgcxurfyuszxsewsn`), tabla

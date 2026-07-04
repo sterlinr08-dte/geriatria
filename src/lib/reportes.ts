@@ -55,16 +55,16 @@ export function imprimirTabla(opts: {
     @page { size: A4 ${orientacion}; margin: 12mm; }
     * { box-sizing: border-box; }
     body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color:#111; margin:0; }
-    .hd { text-align:center; margin-bottom:8px; border-bottom:2px solid #a9851f; padding-bottom:6px; }
-    .hd h2 { margin:0; font-size:18px; color:#86198f; }
+    .hd { text-align:center; margin-bottom:8px; border-bottom:2px solid #5484b4; padding-bottom:6px; }
+    .hd h2 { margin:0; font-size:18px; color:#456f9c; }
     .hd p { margin:1px 0; font-size:11px; color:#555; }
     h1 { font-size:15px; margin:12px 0 2px; }
     .sub { font-size:11px; color:#555; margin:0 0 8px; }
     table { width:100%; border-collapse:collapse; font-size:11px; }
     th,td { border:1px solid #d0d0d0; padding:5px 7px; }
     thead { display: table-header-group; }
-    th { background:#f7eef7; }
-    tr.tot td { font-weight:bold; background:#faf5fa; }
+    th { background:#eef4fa; }
+    tr.tot td { font-weight:bold; background:#eef4fa; }
     .foot { margin-top:14px; font-size:10px; color:#888; text-align:center; }
   </style></head><body>
     <div class="hd">
