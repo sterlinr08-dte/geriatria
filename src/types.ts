@@ -350,7 +350,7 @@ export interface Articulo {
 
 export type EstadoMobiliario = 'BUENO' | 'REGULAR' | 'DANADO'
 
-// Mobiliario y equipos (activos físicos del salón; no es inventario de venta).
+// Mobiliario y equipos (activos físicos del consultorio; no es inventario de venta).
 export interface Mobiliario {
   id: string
   codigo: number

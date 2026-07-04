@@ -106,7 +106,7 @@ export default function Articulos() {
     <div>
       <PageHeader
         title="Artículos / Productos"
-        subtitle="Inventario de productos del salón"
+        subtitle="Inventario de productos del consultorio"
         action={
           <button className="btn-primary" onClick={abrirNuevo}>
             <Plus size={16} /> Nuevo artículo

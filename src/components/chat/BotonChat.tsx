@@ -10,9 +10,9 @@ export function BurbujaChat({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       aria-label="Abrir chat"
       title="Chat · En línea"
-      className="group fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#f2d873] via-[#c9a227] to-[#b8901f] text-white shadow-[0_12px_28px_-8px_rgba(176,141,28,0.75),inset_0_1px_0_rgba(255,255,255,0.55)] ring-1 ring-[#9c7d18] transition hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-8px_rgba(176,141,28,0.9)]"
+      className="group fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#8fb0d6] via-[#5484b4] to-[#456f9c] text-white shadow-[0_12px_28px_-8px_rgba(69,111,156,0.75),inset_0_1px_0_rgba(255,255,255,0.55)] ring-1 ring-[#3a5c82] transition hover:-translate-y-0.5 hover:shadow-[0_16px_34px_-8px_rgba(69,111,156,0.9)]"
     >
-      {n > 0 && <span className="pointer-events-none absolute inset-0 rounded-full border-2 border-[#c9a227]/60 animate-ping" />}
+      {n > 0 && <span className="pointer-events-none absolute inset-0 rounded-full border-2 border-[#5484b4]/60 animate-ping" />}
       <MessageCircle size={25} className="relative" />
       {n > 0 && (
         <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-[11px] font-bold text-white ring-2 ring-white">
@@ -31,7 +31,7 @@ export function IconoChatHeader({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       aria-label="Abrir chat"
       title="Chat · En línea"
-      className="relative flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[#f2d873] via-[#c9a227] to-[#b8901f] text-white ring-2 ring-white/70 shadow-[0_3px_8px_-3px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] transition hover:brightness-105"
+      className="relative flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-[#8fb0d6] via-[#5484b4] to-[#456f9c] text-white ring-2 ring-white/70 shadow-[0_3px_8px_-3px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.5)] transition hover:brightness-105"
     >
       {n > 0 && <span className="pointer-events-none absolute inset-0 rounded-full border-2 border-white/70 animate-ping" />}
       <MessageCircle size={15} className="relative" />

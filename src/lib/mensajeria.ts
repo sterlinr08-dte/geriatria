@@ -6,7 +6,7 @@
 // helpers para armar el mensaje.
 
 export const PLANTILLA_CITA_DEFAULT =
-  'Hola {paciente} 👋, le recordamos su cita en {clinica} el {fecha} a las {hora}. Por favor confirme respondiendo *Sí*. ¡Gracias!'
+  'Hola {paciente}, le recordamos su cita en {clinica} el {fecha} a las {hora}. Por favor confirme respondiendo *Sí*. ¡Gracias!'
 
 // Normaliza un teléfono dominicano al formato que espera wa.me (código país + número, sin signos).
 export function normalizarTelefonoRD(tel: string | null | undefined): string {

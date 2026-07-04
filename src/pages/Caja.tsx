@@ -643,7 +643,7 @@ export default function Caja() {
                 <p>{negocio.direccion} · {negocio.referencia}</p>
                 <p>WhatsApp {negocio.whatsapp} · {negocio.instagram}</p>
               </div>
-              <p className="text-center text-xs font-medium text-brand-600">¡Gracias por su preferencia! 💕</p>
+              <p className="text-center text-xs font-medium text-brand-600">¡Gracias por su preferencia! </p>
             </div>
 
             <div className="flex gap-2 no-print">
@@ -681,7 +681,7 @@ export default function Caja() {
             )}
 
             {/* Total grande (monto a pagar ahora) */}
-            <div className="rounded-2xl bg-gradient-to-br from-brand-600 to-brand-500 px-5 py-4 text-center text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_14px_30px_-12px_rgba(201,162,39,0.6)]">
+            <div className="rounded-2xl bg-gradient-to-br from-brand-600 to-brand-500 px-5 py-4 text-center text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2),0_14px_30px_-12px_rgba(84,132,180,0.6)]">
               <p className="text-xs uppercase tracking-widest text-white/80">{esCredito ? 'A pagar ahora' : 'Total a cobrar'}</p>
               <p className="text-3xl font-extrabold">{money(cobroTotal)}</p>
             </div>
@@ -701,7 +701,7 @@ export default function Caja() {
                         onClick={() => setMetodoCobro(m)}
                         className={`flex flex-col items-center gap-1 rounded-xl border px-2 py-3 text-xs font-semibold transition ${
                           activo
-                            ? 'border-brand-400 bg-brand-50 text-brand-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_6px_14px_-4px_rgba(201,162,39,0.35)]'
+                            ? 'border-brand-400 bg-brand-50 text-brand-700 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_6px_14px_-4px_rgba(84,132,180,0.35)]'
                             : 'border-slate-200 bg-white text-slate-500 hover:border-pink-200'
                         }`}
                       >
@@ -836,7 +836,7 @@ export default function Caja() {
           )}
           {bloqueadoPorDescuadre && puedeVerDescuadre && (
             <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-center text-xs font-medium text-rose-700">
-              ⚠️ Hay un faltante. No tienes permiso para cerrar la caja con faltante.
+               Hay un faltante. No tienes permiso para cerrar la caja con faltante.
               Pide a un gerente o administrador que la cierre.
             </div>
           )}

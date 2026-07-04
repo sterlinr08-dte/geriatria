@@ -65,16 +65,16 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-white px-7 py-8 text-slate-800 shadow-[0_18px_42px_-18px_rgba(201,162,39,0.30)]">
+      <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-white px-7 py-8 text-slate-800 shadow-[0_18px_42px_-18px_rgba(84,132,180,0.30)]">
         <div>
           <p className="text-sm uppercase tracking-[0.25em] text-amber-600">{negocio.nombre}</p>
-          <h1 className="mt-1 font-display text-3xl font-bold">Bienvenida 🦷</h1>
+          <h1 className="mt-1 font-display text-3xl font-bold">Bienvenido</h1>
           <p className="mt-2 text-slate-500">{fechaLarga(hoy)}</p>
         </div>
         <div className="text-sm text-slate-500">
-          <p>📍 {negocio.direccion}</p>
-          <p>📱 {negocio.whatsapp}</p>
-          <p>📷 {negocio.instagram}</p>
+          <p> {negocio.direccion}</p>
+          <p> {negocio.whatsapp}</p>
+          <p> {negocio.instagram}</p>
         </div>
       </div>
 
@@ -83,7 +83,7 @@ export default function Dashboard() {
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {tarjetas.map((t) => (
           <Link key={t.label} to={t.to} className="card">
-            <div className={`mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl ring-1 ring-black/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_8px_16px_-6px_rgba(201,162,39,0.3)] ${t.color}`}>
+            <div className={`mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl ring-1 ring-black/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_8px_16px_-6px_rgba(84,132,180,0.3)] ${t.color}`}>
               <t.icon size={20} />
             </div>
             <p className="text-2xl font-bold text-slate-800">{loading ? '…' : t.valor}</p>

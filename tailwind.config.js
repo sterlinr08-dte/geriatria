@@ -40,6 +40,7 @@ export default {
         verde,
         // Sobrescribir las paletas del molde para recolorear a azul de marca.
         amber: azul,
+        gold: azul,
         pink: azul,
         fuchsia: azul,
       },

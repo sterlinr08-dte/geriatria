@@ -50,7 +50,7 @@ export default function Configuracion() {
       + `<div style="font-size:15px;font-weight:bold">${negocio.nombre}</div>`
       + `<div style="margin-top:4px;font-weight:bold">PRUEBA DE IMPRESIÓN DIRECTA</div>`
       + `<div>QZ Tray · ${ancho} mm</div>`
-      + `<div style="margin:6px 0">Si esto salió SIN ningún cuadro,<br/>¡la impresión directa quedó lista! ✅</div>`
+      + `<div style="margin:6px 0">Si esto salió SIN ningún cuadro,<br/>¡la impresión directa quedó lista! </div>`
       + `<div style="font-size:10px">${negocio.direccion || ''}</div></div>`
     try {
       await imprimirHTML(html, ancho)
@@ -602,7 +602,7 @@ export default function Configuracion() {
                 rows={3}
                 value={formNeg.wa_plantilla}
                 onChange={(e) => setFormNeg({ ...formNeg, wa_plantilla: e.target.value })}
-                placeholder="Hola {paciente} 👋, le recordamos su cita en {clinica} el {fecha} a las {hora}. Por favor confirme respondiendo *Sí*. ¡Gracias!"
+                placeholder="Hola {paciente}, le recordamos su cita en {clinica} el {fecha} a las {hora}. Por favor confirme respondiendo *Sí*. ¡Gracias!"
               />
               <p className="mt-1 text-xs text-slate-600">
                 Usa <b>{'{paciente}'}</b>, <b>{'{clinica}'}</b>, <b>{'{fecha}'}</b> y <b>{'{hora}'}</b>; se reemplazan solos. Si lo dejas vacío, se usa un mensaje por defecto.
@@ -689,7 +689,7 @@ export default function Configuracion() {
               <li>Pon tu impresora térmica como <b>predeterminada</b> en Windows.</li>
               <li>Instala <b>QZ Tray</b> (asistente normal: Siguiente → Siguiente → Finalizar).</li>
               <li>Abre (doble clic) el <b>configurador</b> de abajo: deja el certificado puesto y todo listo, <b>automático</b>.</li>
-              <li>Pulsa <b>“Probar impresión directa”</b>. Si sale el ticket sin cuadros, ¡quedó! 🎉</li>
+              <li>Pulsa <b>“Probar impresión directa”</b>. Si sale el ticket sin cuadros, ¡quedó! </li>
             </ol>
             <div className="flex flex-wrap gap-2">
               <a href="https://qz.io/download/" target="_blank" rel="noreferrer" className="btn-primary">
@@ -1181,7 +1181,7 @@ export default function Configuracion() {
             <p className="font-display text-base font-bold text-brand-800">{negocio.nombre}</p>
             <p className="text-xs font-semibold text-slate-600">PRUEBA DE IMPRESIÓN</p>
             <p className="text-xs text-slate-600">Ancho configurado: {negocio.ancho_ticket} mm</p>
-            <p className="text-xs text-slate-600">Si lees esto completo y centrado, la impresora quedó bien. ✅</p>
+            <p className="text-xs text-slate-600">Si lees esto completo y centrado, la impresora quedó bien. </p>
             <p className="text-xs text-slate-500">{negocio.direccion} · {negocio.telefono}</p>
           </div>
           <p className="text-xs text-slate-500 no-print">Si cambiaste el ancho, pulsa <b>Guardar</b> antes de imprimir la prueba.</p>

@@ -163,7 +163,7 @@ export default function SelectorPaciente({ clientes, value, onChange, placeholde
                   </span>
                   {(c.cedula || c.telefono) && (
                     <span className="shrink-0 text-right text-xs text-slate-400">
-                      {c.cedula && <span className="block">🆔 {c.cedula}</span>}
+                      {c.cedula && <span className="block"> {c.cedula}</span>}
                       {c.telefono && <span className="block">{c.telefono}</span>}
                     </span>
                   )}

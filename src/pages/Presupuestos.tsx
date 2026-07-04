@@ -389,7 +389,7 @@ export default function Presupuestos({ pacienteFijo }: { pacienteFijo?: string }
               )}
             </div>
             <div>
-              <label className="label">Odontólogo</label>
+              <label className="label">Médico</label>
               <select className="input" value={empleadoId} onChange={(e) => setEmpleadoId(e.target.value)}>
                 <option value="">— Sin asignar —</option>
                 {empleados.map((em) => (

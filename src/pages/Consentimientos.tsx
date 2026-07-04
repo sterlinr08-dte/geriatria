@@ -225,7 +225,7 @@ export default function Consentimientos({ pacienteFijo }: { pacienteFijo?: strin
 <style>
   * { box-sizing: border-box; }
   body { font-family: Georgia,'Times New Roman',serif; color:#1f2937; margin:0; padding:40px 48px; line-height:1.6; }
-  .encabezado { display:flex; align-items:center; gap:18px; border-bottom:2px solid #c9a227; padding-bottom:18px; margin-bottom:22px; }
+  .encabezado { display:flex; align-items:center; gap:18px; border-bottom:2px solid #5484b4; padding-bottom:18px; margin-bottom:22px; }
   .encabezado img { height:70px; width:auto; object-fit:contain; }
   .clinica-nombre { font-size:22px; font-weight:bold; color:#111827; margin:0; }
   .clinica-datos { font-size:12px; color:#4b5563; margin-top:4px; }

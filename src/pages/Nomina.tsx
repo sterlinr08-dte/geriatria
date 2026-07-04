@@ -380,7 +380,7 @@ export default function Nomina() {
 
               {comSolapadas.length > 0 && (
                 <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-                  ⚠️ Ya registraste comisión a este empleado que cubre parte de este periodo:
+                   Ya registraste comisión a este empleado que cubre parte de este periodo:
                   {comSolapadas.map((p) => (
                     <span key={p.id} className="ml-1 font-semibold">
                       {fechaCorta(p.comision_desde!)}–{fechaCorta(p.comision_hasta!)} ({money(p.monto)})

@@ -174,7 +174,7 @@ export default function HiloMensajes({ conversacionId, miId, usuarios, onActivid
         {cargando ? (
           <p className="py-10 text-center text-sm text-slate-400">Cargando conversación…</p>
         ) : mensajes.length === 0 ? (
-          <p className="py-10 text-center text-sm text-slate-400">No hay mensajes. Escribe el primero 👋</p>
+          <p className="py-10 text-center text-sm text-slate-400">No hay mensajes. Escribe el primero </p>
         ) : (
           mensajes.map((m, i) => {
             const prev = mensajes[i - 1]
@@ -202,7 +202,7 @@ export default function HiloMensajes({ conversacionId, miId, usuarios, onActivid
                     {citado && (
                       <div className="mb-1 border-l-2 border-amber-400 bg-black/5 px-2 py-1 text-[11px] text-slate-500">
                         <span className="font-semibold">{nombreUsuario(usuarios[citado.autor_id ?? ''])}: </span>
-                        {citado.eliminado ? 'mensaje eliminado' : (citado.texto ?? '📎 archivo')}
+                        {citado.eliminado ? 'mensaje eliminado' : (citado.texto ?? ' archivo')}
                       </div>
                     )}
                     {m.eliminado ? (
@@ -260,13 +260,13 @@ export default function HiloMensajes({ conversacionId, miId, usuarios, onActivid
       {(respondiendo || editando) && (
         <div className="border-t border-slate-200 bg-white px-2.5 pt-2">
           <div className="flex items-stretch gap-2 rounded-lg bg-slate-100 py-1.5 pl-2 pr-1">
-            <div className="w-1 shrink-0 rounded-full" style={{ background: editando ? '#c9a227' : colorAvatar(respondiendo!.autor_id) }} />
+            <div className="w-1 shrink-0 rounded-full" style={{ background: editando ? '#5484b4' : colorAvatar(respondiendo!.autor_id) }} />
             <div className="min-w-0 flex-1 py-0.5">
-              <p className="truncate text-[12px] font-bold" style={{ color: editando ? '#9c7d18' : colorAvatar(respondiendo!.autor_id) }}>
+              <p className="truncate text-[12px] font-bold" style={{ color: editando ? '#3a5c82' : colorAvatar(respondiendo!.autor_id) }}>
                 {editando ? 'Editar mensaje' : nombreUsuario(usuarios[respondiendo!.autor_id ?? ''])}
               </p>
               <p className="truncate text-[12px] text-slate-500">
-                {editando ? (editando.texto ?? '') : (respondiendo!.texto ?? '📎 archivo')}
+                {editando ? (editando.texto ?? '') : (respondiendo!.texto ?? ' archivo')}
               </p>
             </div>
             <button onClick={() => { setRespondiendo(null); setEditando(null); if (editando) setTexto('') }} className="self-center rounded-full p-1 text-slate-400 hover:bg-slate-200"><X size={16} /></button>
@@ -288,7 +288,7 @@ export default function HiloMensajes({ conversacionId, miId, usuarios, onActivid
           placeholder="Mensaje"
           className="max-h-32 min-h-[40px] flex-1 resize-none rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-100"
         />
-        <button onClick={() => enviar()} disabled={enviando || !texto.trim()} className="shrink-0 rounded-xl bg-gradient-to-b from-[#e6b93c] to-[#c9a227] p-2.5 text-white shadow disabled:opacity-40">
+        <button onClick={() => enviar()} disabled={enviando || !texto.trim()} className="shrink-0 rounded-xl bg-gradient-to-b from-[#6c9ccc] to-[#5484b4] p-2.5 text-white shadow disabled:opacity-40">
           {editando ? <Check size={18} /> : <Send size={18} />}
         </button>
       </div>

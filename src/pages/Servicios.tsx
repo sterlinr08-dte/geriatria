@@ -99,7 +99,7 @@ export default function Servicios() {
     <div>
       <PageHeader
         title="Servicios y precios"
-        subtitle="Catálogo de servicios del salón"
+        subtitle="Catálogo de servicios del consultorio"
         action={
           <button className="btn-primary" onClick={abrirNuevo}>
             <Plus size={16} /> Nuevo servicio

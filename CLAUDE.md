@@ -148,6 +148,9 @@ Requiere un `.env` (copiar de `.env.example`) con `VITE_SUPABASE_URL` y `VITE_SU
 - **Publicar en vivo directo a `main`** (deploy automático); versiones pequeñas y probadas.
   Avisar antes solo si el cambio es grande/riesgoso, y **antes de cada fase**.
 - **Arreglos de RAÍZ**, no parches. **Estética = prioridad real (nivel plus).**
+- **SIN emojis en la interfaz** (el dueño los considera informales): usar solo iconos
+  (lucide) y texto. Ningún hex dorado del molde: todo azul de marca (`brand`) — hay
+  `amber`/`gold`/`pink`/`fuchsia` sobrescritos a azul en `tailwind.config.js`.
 - Contexto RD: RD$, ITBIS, NCF, cédula, ARS, `es-DO`. **Todo imprimible / PDF / WhatsApp.**
 - **Claves y secretos: por chat o server-side. JAMÁS en el repo.**
 - **Actualizar este CLAUDE.md tras cada cambio importante.**

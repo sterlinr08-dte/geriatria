@@ -64,12 +64,12 @@ export interface ConversacionResumen {
 
 // Departamentos del consultorio (Fase 2 — grupos automáticos).
 export const DEPARTAMENTOS: { key: string; nombre: string; emoji: string }[] = [
-  { key: 'recepcion', nombre: 'Recepción', emoji: '🛎️' },
-  { key: 'medicos', nombre: 'Médicos', emoji: '👨‍⚕️' },
-  { key: 'enfermeria', nombre: 'Enfermería', emoji: '💉' },
-  { key: 'laboratorio', nombre: 'Laboratorio', emoji: '🔬' },
-  { key: 'caja', nombre: 'Caja', emoji: '💵' },
-  { key: 'administracion', nombre: 'Administración', emoji: '🗂️' },
+  { key: 'recepcion', nombre: 'Recepción', emoji: '' },
+  { key: 'medicos', nombre: 'Médicos', emoji: '' },
+  { key: 'enfermeria', nombre: 'Enfermería', emoji: '' },
+  { key: 'laboratorio', nombre: 'Laboratorio', emoji: '' },
+  { key: 'caja', nombre: 'Caja', emoji: '' },
+  { key: 'administracion', nombre: 'Administración', emoji: '' },
 ]
 
 export function nombreDepartamento(key: string | null): string {
@@ -78,14 +78,14 @@ export function nombreDepartamento(key: string | null): string {
 
 // Respuestas rápidas (Fase 7 — un clic).
 export const RESPUESTAS_RAPIDAS: string[] = [
-  'Paciente confirmado ✅',
-  'Paciente llegó 🚪',
-  'Doctor disponible 👨‍⚕️',
-  'Material agotado ⚠️',
-  'Resultados de laboratorio listos 🔬',
-  'Presupuesto aprobado 📄',
-  'Pago recibido 💵',
-  'Ya voy 🏃',
+  'Paciente confirmado ',
+  'Paciente llegó ',
+  'Doctor disponible ',
+  'Material agotado ',
+  'Resultados de laboratorio listos ',
+  'Presupuesto aprobado ',
+  'Pago recibido ',
+  'Ya voy ',
 ]
 
 // Iniciales para el avatar.
@@ -97,7 +97,7 @@ export function inicialesChat(nombre: string | null | undefined): string {
 }
 
 // Color estable del avatar a partir del id del usuario.
-const PALETA = ['#c9a227', '#0f9d6b', '#2563eb', '#db2777', '#7c3aed', '#ea580c', '#0891b2', '#65a30d']
+const PALETA = ['#5484b4', '#0f9d6b', '#2563eb', '#db2777', '#7c3aed', '#ea580c', '#0891b2', '#65a30d']
 export function colorAvatar(id: string | null | undefined): string {
   if (!id) return PALETA[0]
   let h = 0
@@ -136,8 +136,8 @@ export function vistaPrevia(u: ConversacionResumen['ultimo']): string {
   if (!u) return 'Sin mensajes aún'
   if (u.eliminado) return 'Mensaje eliminado'
   if (!u.texto && u.adjunto_tipo) {
-    if (u.adjunto_tipo.startsWith('image/')) return '📷 Foto'
-    return '📎 Archivo'
+    if (u.adjunto_tipo.startsWith('image/')) return ' Foto'
+    return ' Archivo'
   }
   return u.texto ?? ''
 }

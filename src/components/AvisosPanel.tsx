@@ -27,7 +27,7 @@ export default function AvisosPanel() {
   if (vigentes.length === 0) return null
 
   return (
-    <div className="mb-6 rounded-2xl border border-amber-200 bg-white p-4 shadow-[0_18px_42px_-22px_rgba(201,162,39,0.30)]">
+    <div className="mb-6 rounded-2xl border border-amber-200 bg-white p-4 shadow-[0_18px_42px_-22px_rgba(84,132,180,0.30)]">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="flex items-center gap-2 font-display text-lg font-bold text-slate-800"><Megaphone size={18} className="text-amber-600" /> Avisos</h2>
         <Link to="/avisos" className="text-sm font-semibold text-brand-600 hover:underline">Ver todos →</Link>
@@ -39,7 +39,7 @@ export default function AvisosPanel() {
             <div key={a.id} className={`rounded-xl border px-4 py-3 ${n.card}`}>
               <div className="flex items-center gap-2">
                 <span>{n.emoji}</span>
-                <p className="flex-1 font-semibold text-slate-800">{a.fijado && '📌 '}{a.titulo}</p>
+                <p className="flex-1 font-semibold text-slate-800">{a.fijado && ' '}{a.titulo}</p>
                 <span className="text-[11px] text-slate-400">{hace(a.created_at)}</span>
               </div>
               {a.cuerpo && <p className="mt-1 whitespace-pre-wrap text-sm text-slate-600">{a.cuerpo}</p>}

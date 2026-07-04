@@ -9,11 +9,11 @@ import Modal from '../components/Modal'
 
 const vacio = {
   nombre: '',
-  puesto: 'Odontólogo/a',
+  puesto: 'Médico geriatra',
   telefono: '',
   email: '',
   especialidad: '',
-  color: '#C9A227',
+  color: '#5484b4',
   comision_pct: 0,
   activo: true,
 }
@@ -90,7 +90,7 @@ export default function Empleados() {
       telefono: e.telefono ?? '',
       email: e.email ?? '',
       especialidad: e.especialidad ?? '',
-      color: e.color ?? '#C9A227',
+      color: e.color ?? '#5484b4',
       comision_pct: Number(e.comision_pct),
       activo: e.activo,
     })
@@ -125,7 +125,7 @@ export default function Empleados() {
   // ---------- ACCESO (usuario y contraseña) ----------
   function abrirAcceso(e: Empleado) {
     const p = perfilesByEmp[e.id] ?? null
-    const rolDefault = roles.find((r) => r.key === 'estilista')?.key ?? roles[0]?.key ?? ''
+    const rolDefault = roles[0]?.key ?? ''
     setAccesoEmp(e)
     setAccesoPerfil(p)
     setFormA({
@@ -172,7 +172,7 @@ export default function Empleados() {
     <div>
       <PageHeader
         title="Empleados"
-        subtitle="Personal del salón"
+        subtitle="Personal del consultorio"
         action={
           <button className="btn-primary" onClick={abrirNuevo}>
             <Plus size={16} /> Nuevo empleado
@@ -206,7 +206,7 @@ export default function Empleados() {
               <div className="flex items-start gap-3">
                 <div
                   className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full text-lg font-bold text-white"
-                  style={{ backgroundColor: e.color ?? '#C9A227' }}
+                  style={{ backgroundColor: e.color ?? '#5484b4' }}
                 >
                   {e.nombre.charAt(0).toUpperCase()}
                 </div>
@@ -217,16 +217,16 @@ export default function Empleados() {
                 </div>
               </div>
               <div className="mt-4 space-y-1 text-sm text-slate-500">
-                {e.telefono && <p>📞 {e.telefono}</p>}
-                {e.email && <p className="truncate">✉️ {e.email}</p>}
-                <p>💰 Comisión: {Number(e.comision_pct)}%</p>
+                {e.telefono && <p> {e.telefono}</p>}
+                {e.email && <p className="truncate"> {e.email}</p>}
+                <p> Comisión: {Number(e.comision_pct)}%</p>
                 {esAdmin && (
                   perfilesByEmp[e.id] ? (
                     <p className={perfilesByEmp[e.id].activo ? 'text-emerald-600' : 'text-amber-600'}>
-                      🔑 {perfilesByEmp[e.id].username}{perfilesByEmp[e.id].activo ? '' : ' (sin acceso)'}
+                       {perfilesByEmp[e.id].username}{perfilesByEmp[e.id].activo ? '' : ' (sin acceso)'}
                     </p>
                   ) : (
-                    <p className="text-slate-600">🔒 Sin usuario para iniciar sesión</p>
+                    <p className="text-slate-600"> Sin usuario para iniciar sesión</p>
                   )
                 )}
               </div>

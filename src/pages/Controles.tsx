@@ -112,7 +112,7 @@ export default function Controles() {
         <div className="card flex flex-col items-center gap-3 py-12 text-center">
           <BellRing className="text-brand-300" size={40} />
           <p className="text-slate-500">
-            {filtro === 'contactar' ? 'No hay pacientes por contactar hoy. 🎉' : 'No hay controles en esta vista.'}
+            {filtro === 'contactar' ? 'No hay pacientes por contactar hoy. ' : 'No hay controles en esta vista.'}
           </p>
           <button className="btn-primary" onClick={nuevo}><Plus size={16} /> Programar un control</button>
         </div>

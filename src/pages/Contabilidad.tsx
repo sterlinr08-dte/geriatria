@@ -143,7 +143,7 @@ export default function Contabilidad() {
             </ul>
             {r.facturasPendientes > 0 && (
               <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
-                ⚠️ Hay {money(r.facturasPendientes)} en facturas <strong>pendientes</strong> de cobro este mes (no se cuentan como ingreso hasta marcarlas pagadas).
+                 Hay {money(r.facturasPendientes)} en facturas <strong>pendientes</strong> de cobro este mes (no se cuentan como ingreso hasta marcarlas pagadas).
               </p>
             )}
           </div>

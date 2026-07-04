@@ -109,7 +109,7 @@ export default function Documentos({ pacienteFijo }: { pacienteFijo?: string } =
 <style>
   * { box-sizing: border-box; }
   body { font-family: Georgia,'Times New Roman',serif; color:#1f2937; margin:0; padding:40px 48px; line-height:1.6; }
-  .enc { display:flex; align-items:center; gap:18px; border-bottom:2px solid #c9a227; padding-bottom:16px; margin-bottom:20px; }
+  .enc { display:flex; align-items:center; gap:18px; border-bottom:2px solid #5484b4; padding-bottom:16px; margin-bottom:20px; }
   .enc img { height:70px; width:auto; object-fit:contain; }
   .clinica { font-size:22px; font-weight:bold; color:#111827; margin:0; }
   .datos { font-size:12px; color:#4b5563; margin-top:4px; line-height:1.4; }

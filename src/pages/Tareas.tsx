@@ -108,8 +108,8 @@ export default function Tareas() {
                   <div className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-slate-500">
                     <span className="inline-flex items-center gap-1"><User size={12} /> {t.asignado_a ? nombreUsuario(usuarios[t.asignado_a]) : 'Sin asignar'}</span>
                     {t.fecha_limite && <span className={`inline-flex items-center gap-1 ${vencida ? 'font-semibold text-rose-600' : ''}`}><CalendarClock size={12} /> {fechaCorta(t.fecha_limite)}{vencida ? ' · vencida' : ''}</span>}
-                    {t.cliente?.nombre && <Link to={`/ficha/${t.cliente_id}`} className="inline-flex items-center gap-1 text-amber-700 hover:underline">🦷 {t.cliente.nombre}</Link>}
-                    {t.conversacion_id && <Link to={`/chat?c=${t.conversacion_id}`} className="text-amber-700 hover:underline">💬 chat</Link>}
+                    {t.cliente?.nombre && <Link to={`/ficha/${t.cliente_id}`} className="inline-flex items-center gap-1 text-amber-700 hover:underline"> {t.cliente.nombre}</Link>}
+                    {t.conversacion_id && <Link to={`/chat?c=${t.conversacion_id}`} className="text-amber-700 hover:underline"> chat</Link>}
                   </div>
                   {t.descripcion && <p className="mt-1 text-xs text-slate-500">{t.descripcion}</p>}
                 </div>

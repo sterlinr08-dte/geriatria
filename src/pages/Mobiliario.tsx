@@ -148,7 +148,7 @@ export default function Mobiliario() {
     <div>
       <PageHeader
         title="Mobiliario y equipos"
-        subtitle="Inventario de los bienes del salón (muebles, equipos, decoración…)"
+        subtitle="Inventario de los bienes del consultorio (muebles, equipos, decoración…)"
         action={
           <button className="btn-primary" onClick={abrirNuevo}>
             <Plus size={16} /> Nuevo bien

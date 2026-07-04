@@ -45,7 +45,7 @@ export default function CampanaNotificaciones() {
         if (m.autor_id === miId) return
         if (getConversacionActiva() === m.conversacion_id) return // ya lo estás viendo
         empujarToast({
-          id: 'msg-' + m.id, icono: m.adjunto_tipo ? '📎' : '💬',
+          id: 'msg-' + m.id, icono: m.adjunto_tipo ? '' : '',
           titulo: 'Nuevo mensaje', cuerpo: m.texto ?? (m.adjunto_tipo ? 'Archivo adjunto' : ''),
           enlace: '/chat?c=' + m.conversacion_id,
         })
@@ -91,14 +91,14 @@ export default function CampanaNotificaciones() {
       <button onClick={() => setAbierto((v) => !v)} className="relative rounded-lg p-1.5 text-white hover:bg-white/20" aria-label="Notificaciones">
         <Bell size={22} />
         {noLeidas > 0 && (
-          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white ring-2 ring-[#c9a227]">
+          <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white ring-2 ring-[#5484b4]">
             {noLeidas > 9 ? '9+' : noLeidas}
           </span>
         )}
       </button>
 
       {abierto && (
-        <div className="absolute right-0 top-11 z-50 w-80 max-w-[92vw] overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_-18px_rgba(120,90,10,0.5)] ring-1 ring-amber-100">
+        <div className="absolute right-0 top-11 z-50 w-80 max-w-[92vw] overflow-hidden rounded-2xl bg-white shadow-[0_24px_60px_-18px_rgba(28,42,58,0.5)] ring-1 ring-amber-100">
           <div className="flex items-center justify-between border-b border-amber-100 px-4 py-2.5">
             <span className="text-sm font-bold text-slate-800">Notificaciones</span>
             {noLeidas > 0 && <button onClick={marcarTodas} className="flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-800"><CheckCheck size={14} /> Marcar todas</button>}
@@ -127,7 +127,7 @@ export default function CampanaNotificaciones() {
       {createPortal(
         <div className="pointer-events-none fixed bottom-4 right-4 z-[60] flex w-80 max-w-[92vw] flex-col gap-2">
           {toasts.map((t) => (
-            <div key={t.id} onClick={() => irToast(t)} className="pointer-events-auto flex cursor-pointer items-start gap-3 rounded-xl bg-white p-3 shadow-[0_16px_40px_-12px_rgba(120,90,10,0.55)] ring-1 ring-amber-100 animate-modal-panel">
+            <div key={t.id} onClick={() => irToast(t)} className="pointer-events-auto flex cursor-pointer items-start gap-3 rounded-xl bg-white p-3 shadow-[0_16px_40px_-12px_rgba(28,42,58,0.55)] ring-1 ring-amber-100 animate-modal-panel">
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-amber-100 text-lg">{t.icono}</span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-bold text-slate-800">{t.titulo}</p>

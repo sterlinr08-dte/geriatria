@@ -264,7 +264,7 @@ export default function CuentasPorCobrar() {
               <div className="border-t pt-1 text-center text-xs text-slate-500">
                 <p>{negocio.direccion} · {negocio.referencia}</p>
               </div>
-              <p className="text-center text-xs font-medium text-brand-600">¡Gracias por su pago! 💕</p>
+              <p className="text-center text-xs font-medium text-brand-600">¡Gracias por su pago! </p>
             </div>
             <div className="flex gap-2 no-print">
               <button className="btn-ghost flex-1" onClick={() => setRecibo(null)}>Cerrar</button>

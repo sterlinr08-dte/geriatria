@@ -132,7 +132,7 @@ export default function Sidebar({ open, onClose }: Props) {
                       `group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150 ${
                         isActive
                           ? 'bg-white text-amber-800 shadow-[0_5px_12px_-3px_rgba(0,0,0,0.45),inset_0_1px_0_#fff] -translate-y-px'
-                          : 'text-amber-50 [text-shadow:0_1px_1px_rgba(120,90,10,0.4)] hover:-translate-y-px hover:bg-white/15 hover:text-white hover:shadow-[0_4px_10px_-4px_rgba(0,0,0,0.35)]'
+                          : 'text-amber-50 [text-shadow:0_1px_1px_rgba(28,42,58,0.4)] hover:-translate-y-px hover:bg-white/15 hover:text-white hover:shadow-[0_4px_10px_-4px_rgba(0,0,0,0.35)]'
                       }`
                     }
                   >

@@ -335,7 +335,7 @@ export default function Citas() {
                 </p>
                 {c.empleado && (
                   <span className="mt-1 inline-flex items-center gap-1 text-xs text-slate-600">
-                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: c.empleado.color ?? '#C9A227' }} />
+                    <span className="h-2 w-2 rounded-full" style={{ backgroundColor: c.empleado.color ?? '#5484b4' }} />
                     {c.empleado.nombre}
                   </span>
                 )}

@@ -658,25 +658,25 @@ export default function Facturacion({ pacienteFijo }: { pacienteFijo?: string } 
 <style>
   * { box-sizing: border-box; }
   body { font-family: 'Segoe UI', Arial, sans-serif; color:#1f2937; margin:0; padding:40px 48px; font-size:13px; }
-  .enc { display:flex; align-items:center; gap:18px; border-bottom:3px solid #c9a227; padding-bottom:16px; margin-bottom:18px; }
+  .enc { display:flex; align-items:center; gap:18px; border-bottom:3px solid #5484b4; padding-bottom:16px; margin-bottom:18px; }
   .enc img { height:74px; width:auto; object-fit:contain; }
   .clinica { font-size:22px; font-weight:bold; color:#111827; margin:0; }
   .datos { font-size:11px; color:#4b5563; margin-top:3px; line-height:1.4; }
   .fact-tit { text-align:right; margin-left:auto; }
-  .fact-tit .lbl { font-size:20px; font-weight:bold; color:#c9a227; letter-spacing:1px; }
+  .fact-tit .lbl { font-size:20px; font-weight:bold; color:#5484b4; letter-spacing:1px; }
   .fact-tit .num { font-size:14px; font-weight:bold; color:#374151; }
   .meta { display:flex; justify-content:space-between; flex-wrap:wrap; gap:6px 24px; margin-bottom:14px; }
   .meta div { font-size:12.5px; }
   .meta .k { font-weight:bold; color:#374151; }
   table { width:100%; border-collapse:collapse; margin-top:6px; }
-  thead th { background:#faf3df; border-bottom:2px solid #c9a227; text-align:left; padding:8px 10px; font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:#6b5a17; }
+  thead th { background:#eef4fa; border-bottom:2px solid #5484b4; text-align:left; padding:8px 10px; font-size:11px; text-transform:uppercase; letter-spacing:.5px; color:#456f9c; }
   thead th.c { text-align:center; } thead th.r { text-align:right; }
   tbody td { border-bottom:1px solid #eee; padding:8px 10px; vertical-align:top; }
   tbody td.c { text-align:center; } tbody td.r { text-align:right; white-space:nowrap; }
   .por { font-size:11px; color:#6b7280; margin-top:2px; }
   .tot { margin-top:14px; margin-left:auto; width:280px; }
   .tot .fila { display:flex; justify-content:space-between; padding:3px 0; font-size:13px; color:#4b5563; }
-  .tot .total { border-top:2px solid #c9a227; margin-top:4px; padding-top:6px; font-size:16px; font-weight:bold; color:#111827; }
+  .tot .total { border-top:2px solid #5484b4; margin-top:4px; padding-top:6px; font-size:16px; font-weight:bold; color:#111827; }
   .tot .devuelto { color:#dc2626; font-weight:600; }
   .pie { margin-top:40px; border-top:1px solid #e5e7eb; padding-top:12px; text-align:center; font-size:11px; color:#6b7280; }
   .ecf { margin-top:22px; display:flex; gap:14px; align-items:center; border:1px solid #e5e7eb; border-radius:10px; padding:12px 14px; }
@@ -1200,7 +1200,7 @@ export default function Facturacion({ pacienteFijo }: { pacienteFijo?: string } 
           <div>
             <label className="label">Artículos o servicios agregados</label>
             {editId && lineasOriginales > 0 && !puedeModificarLineas && (
-              <p className="mb-2 text-xs font-medium text-amber-600">Lo ya agregado (🔒) no se puede modificar ni eliminar sin autorización. Puedes seguir agregando consumo.</p>
+              <p className="mb-2 text-xs font-medium text-amber-600">Lo ya agregado () no se puede modificar ni eliminar sin autorización. Puedes seguir agregando consumo.</p>
             )}
             {lineas.length === 0 ? (
               <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-4 py-6 text-center text-sm text-slate-600">
@@ -1232,7 +1232,7 @@ export default function Facturacion({ pacienteFijo }: { pacienteFijo?: string } 
                           </span>
                         )}
                         {bloqueado ? (
-                          <span className="badge shrink-0 bg-slate-200 text-slate-500" title="Ya agregado · requiere autorización para modificar">🔒 Agregado</span>
+                          <span className="badge shrink-0 bg-slate-200 text-slate-500" title="Ya agregado · requiere autorización para modificar"> Agregado</span>
                         ) : (
                           <button onClick={() => setLineas(lineas.filter((_, idx) => idx !== i))} className="rounded-lg p-1.5 text-slate-600 hover:bg-rose-50 hover:text-rose-600">
                             <X size={16} />
@@ -1292,12 +1292,12 @@ export default function Facturacion({ pacienteFijo }: { pacienteFijo?: string } 
                 </>
               )}
             </div>
-            <p className="mt-1 text-xs text-slate-600">{protegerCuenta ? '🔒 El descuento no se puede cambiar sin autorización.' : 'El método de pago se elige al cobrar en Caja.'}</p>
+            <p className="mt-1 text-xs text-slate-600">{protegerCuenta ? ' El descuento no se puede cambiar sin autorización.' : 'El método de pago se elige al cobrar en Caja.'}</p>
           </div>
 
           <label className={`flex items-center gap-2 text-sm text-slate-600 ${protegerCuenta ? 'opacity-60' : ''}`}>
             <input type="checkbox" checked={aplicaItbis} disabled={protegerCuenta} onChange={(e) => setAplicaItbis(e.target.checked)} />
-            Aplicar ITBIS (18%) {protegerCuenta && <span className="text-xs">🔒</span>}
+            Aplicar ITBIS (18%) {protegerCuenta && <span className="text-xs"></span>}
           </label>
 
           <div className="rounded-lg bg-slate-50 p-3 text-sm">

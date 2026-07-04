@@ -79,7 +79,7 @@ export default function Avisos() {
                   <span className="text-xl">{n.emoji}</span>
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-bold text-slate-800">{a.fijado && '📌 '}{a.titulo}</p>
+                      <p className="font-bold text-slate-800">{a.fijado && ' '}{a.titulo}</p>
                       <span className={`badge ${n.badge}`}>{n.label}</span>
                       {!a.activo && <span className="badge bg-slate-200 text-slate-600">Archivado</span>}
                       {a.expira && <span className={`text-[11px] ${!vigente ? 'text-rose-600' : 'text-slate-400'}`}>· vence {fechaCorta(a.expira)}</span>}
@@ -132,7 +132,7 @@ export default function Avisos() {
           </div>
           <label className="flex cursor-pointer items-center gap-2.5">
             <input type="checkbox" checked={form.fijado} onChange={(e) => setForm({ ...form, fijado: e.target.checked })} className="h-4 w-4 accent-amber-500" />
-            <span className="text-sm text-slate-700">📌 Fijar arriba (destacado)</span>
+            <span className="text-sm text-slate-700"> Fijar arriba (destacado)</span>
           </label>
         </div>
       </Modal>

@@ -14,13 +14,13 @@ export interface Notificacion {
 // Emoji por tipo (si la notificación no trae uno propio).
 export function iconoTipo(tipo: Notificacion['tipo']): string {
   switch (tipo) {
-    case 'mensaje': return '💬'
+    case 'mensaje': return ''
     case 'mencion': return '@'
-    case 'archivo': return '📎'
-    case 'tarea': return '✅'
-    case 'tratamiento': return '🦷'
-    case 'aviso': return '📢'
-    default: return '🔔'
+    case 'archivo': return ''
+    case 'tarea': return ''
+    case 'tratamiento': return ''
+    case 'aviso': return ''
+    default: return ''
   }
 }
 
