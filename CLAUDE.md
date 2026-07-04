@@ -108,8 +108,17 @@ Qué se hizo, en concreto:
   - ✅ 3.2 **Gráficos de tendencia** (`TendenciasPaciente.tsx`, pestaña "Tendencias"): líneas
     SVG livianas (sin librerías) de signos vitales (peso, IMC, TA sistólica/diastólica, glucosa,
     FC, SAT) y de los puntajes de escalas en el tiempo. Colores de marca, verificado visualmente.
-  - ⏳ Próximo: gestión de medicación/polifarmacia (Beers/STOPP-START), lista de problemas
-    CIE-10, registro de vacunación, plan de cuidados/directivas anticipadas.
+  - ✅ 3.3 **Medicación y alertas de polifarmacia** (`lib/medicamentos.ts` + `MedicacionPaciente.tsx`,
+    pestaña "Medicación" en la ficha, tabla `medicamentos_paciente` con RLS): CRUD de medicación
+    (activos/suspendidos), badge de polifarmacia (≥ 5 activos) y **panel de alertas de medicación
+    potencialmente inapropiada en el adulto mayor** (lista curada Beers/STOPP: benzodiazepinas,
+    hipnóticos Z, antihistamínicos 1.ª gen, tricíclicos, AINEs crónicos, sulfonilureas de acción
+    prolongada, relajantes musculares, anticolinérgicos, antipsicóticos, IBP prolongado, etc.).
+    `revisarMedicamento()` marca cada fármaco por principio activo con riesgo/sugerencia y gravedad
+    (alto/moderado); alerta en vivo al escribir el nombre en el alta. Descargo: ayuda orientativa,
+    no sustituye el juicio clínico.
+  - ⏳ Próximo: lista de problemas/diagnósticos CIE-10, registro de vacunación, plan de
+    cuidados/directivas anticipadas.
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
   `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.
   - **SSO (parcial hecho):** en la base madre NEXUS (`tnwsgcxurfyuszxsewsn`), tabla
