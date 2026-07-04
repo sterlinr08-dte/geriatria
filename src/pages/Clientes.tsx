@@ -191,9 +191,8 @@ export default function Clientes() {
               <label className="label">Sexo</label>
               <select className="input" value={form.sexo} onChange={(e) => setForm({ ...form, sexo: e.target.value })}>
                 <option value="">—</option>
-                <option value="Femenino">Femenino</option>
                 <option value="Masculino">Masculino</option>
-                <option value="Otro">Otro</option>
+                <option value="Femenino">Femenino</option>
               </select>
             </div>
           </div>
