@@ -1,14 +1,53 @@
 import { useEffect, useState } from 'react'
-import { PersonStanding, Printer, Save, Trash2 } from 'lucide-react'
+import { PersonStanding, Printer, Save, Trash2, Sparkles } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { Cliente } from '../types'
 import { fechaCorta, hoyISO } from '../lib/format'
 import { NIVELES, nivelDef, figura as figuraSrc, sexoKey, TIENE_ESPALDA, DESCARGO_MAPA, NivelKey, Vista } from '../lib/mapaCorporal'
+import { grupoPorCodigo } from '../lib/cie10'
 import PageHeader from '../components/PageHeader'
 import Cargando from '../components/Cargando'
 import Modal from '../components/Modal'
 import SelectorPaciente from '../components/SelectorPaciente'
 import MapaCorporal2D, { Marca } from './MapaCorporal2D'
+
+// Posición aproximada (x,y en %) en la figura frontal según el sistema del diagnóstico.
+const POS_GRUPO: Record<string, [number, number]> = {
+  'Cardiovascular': [56, 33],
+  'Respiratorio': [44, 33],
+  'Neurológico / mental': [50, 8],
+  'Endocrino / metabólico': [50, 20],
+  'Digestivo': [50, 44],
+  'Genitourinario / renal': [50, 50],
+  'Musculoesquelético': [62, 62],
+  'Síndromes geriátricos': [50, 40],
+  'Hematológico': [48, 40],
+  'Sensorial': [54, 9],
+}
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
+function posPorTexto(d?: string | null): [number, number] | null {
+  const t = (d ?? '').toLowerCase()
+  if (/cabeza|cerebr|demenc|alzh|parkins|cognitiv|[aá]nimo|depres|insomn|mareo|v[eé]rtigo/.test(t)) return [50, 8]
+  if (/ojo|vista|visual|catarat|glaucoma/.test(t)) return [54, 9]
+  if (/o[ií]do|auditiv|hipoacus|zumbid/.test(t)) return [46, 9]
+  if (/coraz|card[ií]|hipertens|presi[oó]n|palpit/.test(t)) return [56, 33]
+  if (/pulm|respir|epoc|asma|\btos\b|neumon/.test(t)) return [44, 33]
+  if (/abdom|digest|est[oó]mag|g[aá]stric|intestin|estre[nñ]im|h[ií]gado/.test(t)) return [50, 44]
+  if (/ri[nñ][oó]n|renal|urin|vejig|pr[oó]stata/.test(t)) return [50, 50]
+  if (/rodilla/.test(t)) return [60, 64]
+  if (/cadera|f[eé]mur/.test(t)) return [58, 52]
+  if (/columna|lumbar|espalda|dorsal/.test(t)) return [50, 40]
+  if (/\bpie\b|pies|tobillo/.test(t)) return [58, 90]
+  if (/mano|mu[nñ]eca|hombro|brazo|codo/.test(t)) return [30, 40]
+  if (/piel|[uú]lcera|herida|escara/.test(t)) return [40, 55]
+  return null
+}
+function posicionSugerida(codigo: string | null, descripcion: string | null, i: number): [number, number] {
+  const base = POS_GRUPO[grupoPorCodigo(codigo) ?? ''] ?? posPorTexto(descripcion) ?? [50, 42]
+  const jx = ((i % 3) - 1) * 5
+  const jy = Math.floor(i / 3) * 5
+  return [clamp(base[0] + jx, 6, 94), clamp(base[1] + jy, 4, 94)]
+}
 
 export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string } = {}) {
   const [clientes, setClientes] = useState<Cliente[]>([])
@@ -83,6 +122,25 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
     setEditId(null)
   }
 
+  async function sugerir() {
+    const { data } = await supabase.from('problemas_paciente')
+      .select('codigo,descripcion,cronico,activo').eq('cliente_id', pacienteId)
+    const activos = (data ?? []).filter((p: any) => p.activo)
+    if (!activos.length) return alert('El paciente no tiene diagnósticos activos en la Lista de problemas (CIE-10).')
+    const existentes = new Set(marcadores.map((m) => (m.texto ?? '').trim().toLowerCase()))
+    const nuevos = activos.filter((p: any) => !existentes.has((p.descripcion ?? '').trim().toLowerCase()))
+    if (!nuevos.length) return alert('Los diagnósticos activos ya están marcados en el mapa.')
+    if (!confirm(`Se agregarán ${nuevos.length} punto(s) sugerido(s) desde los diagnósticos, en la vista frontal. Luego puedes moverlos, editarlos o borrarlos.`)) return
+    const filas = nuevos.map((p: any, i: number) => {
+      const [x, y] = posicionSugerida(p.codigo, p.descripcion, i)
+      return { cliente_id: pacienteId, x, y, nivel: p.cronico ? 'moderado' : 'leve', texto: p.descripcion, vista: 'frontal' }
+    })
+    const { error } = await supabase.from('mapa_marcadores').insert(filas)
+    if (error) return alert('Error al sugerir: ' + error.message)
+    setVista('frontal')
+    cargar(pacienteId)
+  }
+
   function imprimir() {
     const bloque = (v: Vista) => {
       const ms = marcadores.filter((m) => (m.vista ?? 'frontal') === v)
@@ -153,7 +211,10 @@ export default function MapaCorporal({ pacienteFijo }: { pacienteFijo?: string }
         <div className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-sm text-slate-500">Toca el cuerpo para poner un punto donde notaste algo. Arrástralo para moverlo; tócalo para escribir el hallazgo.</p>
-            {marcadores.length > 0 && <button className="btn-ghost" onClick={imprimir}><Printer size={16} /> Reporte</button>}
+            <div className="flex gap-2">
+              <button className="btn-ghost" onClick={sugerir} title="Sugerir puntos desde la lista de problemas (CIE-10)"><Sparkles size={16} /> Sugerir</button>
+              {marcadores.length > 0 && <button className="btn-ghost" onClick={imprimir}><Printer size={16} /> Reporte</button>}
+            </div>
           </div>
 
           {/* Vista frontal / posterior */}

@@ -163,7 +163,18 @@ Qué se hizo, en concreto:
       leyenda + **Reporte imprimible** (figura con los puntos numerados + tabla de hallazgos).
     - Tabla vieja `mapa_corporal` (11 zonas) queda sin uso; la nueva es `mapa_marcadores`.
     - **three.js/react-three-fiber ya NO se importan** (bundle liviano). Deps siguen en package.json.
-    - **Pendiente:** hombre limpio del mismo estilo; opcional autollenar desde CIE-10 / línea de tiempo.
+    - ✅ Hallazgos en **cuadros laterales** (izq/der según el punto) con línea al punto, ancho
+      moderado y pegados al cuerpo (`MapaCorporal2D` calcula posiciones con `ResizeObserver`).
+    - ✅ **Autollenar desde CIE-10:** botón **"Sugerir"** crea puntos a partir de los diagnósticos
+      activos de la Lista de problemas, ubicados por sistema (`posicionSugerida` + `grupoPorCodigo`),
+      en la vista frontal; el médico luego los mueve/edita/borra.
+- **Fase 3.8 — "Chart Advisor" geriátrico (hecho):**
+  - ✅ **Panel de alertas + índice de fragilidad** en la ficha (`components/ResumenAlertas.tsx` +
+    `lib/fragilidad.ts`): resumen arriba de la ficha con la **fragilidad** (robusto/leve/moderada/
+    severa, orientativa) y **alertas** en vivo (polifarmacia, medicación inapropiada Beers/STOPP,
+    vacunas vencidas, escalas en naranja/rojo).
+  - ✅ **Mini-Cog** (cribado cognitivo con test del reloj) agregado a `lib/escalas.ts` (aparece solo
+    en Escalas/Tendencias/alertas). MoCA/MMSE tienen licencia; Mini-Cog es de uso libre.
   - Pendiente general: exequátur y ARS del Dr.; subdominio bonito.
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
   `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.

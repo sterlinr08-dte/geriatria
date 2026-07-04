@@ -95,6 +95,13 @@ function normaliza(s: string): string {
   return (s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
 
+// Devuelve el grupo/sistema de un código CIE-10 (si está en el catálogo).
+export function grupoPorCodigo(codigo?: string | null): string | undefined {
+  if (!codigo) return undefined
+  const c = codigo.trim().toUpperCase()
+  return CIE10.find((x) => x.codigo.toUpperCase() === c)?.grupo
+}
+
 // Busca por código o por descripción (sin acentos). Devuelve hasta `limite` resultados.
 export function buscarCIE10(q: string, limite = 12): CodigoCIE10[] {
   const n = normaliza(q).trim()
