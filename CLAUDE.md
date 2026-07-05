@@ -256,6 +256,19 @@ Requiere un `.env` (copiar de `.env.example`) con `VITE_SUPABASE_URL` y `VITE_SU
 - **Playwright CLI**: skill instalado en `.claude/skills/playwright-cli/` (automatizar/navegar
   páginas). Chromium ya viene en el entorno (`/opt/pw-browsers`); no correr `playwright install`.
 
+### Skills NEXUS PRO (reutilizables, en `.claude/skills/` — viajan committeadas)
+Creadas para todo el ecosistema; **también viven en el molde `amatista-dental`**, así cada
+cliente nuevo que se clone las hereda. Pendiente: copiarlas a **deluxe** y **bayolcell** (repos
+ya existentes que no bajan cambios del molde solos).
+- **nexus-convenciones**: reglas fijas del dueño (móvil primero, sin emojis, marca, RD, RLS,
+  imprimible/PDF/WhatsApp, deploy a main). Se activa al tocar UI/código.
+- **nexus-publicar**: puerta de calidad antes de subir a main (build verde, móvil sin desbordes,
+  sin emojis/hex sueltos, **sin secretos en el diff**, CLAUDE.md al día) y luego commit+push.
+- **nexus-investigar**: orquesta Firecrawl → Playwright → WebSearch para investigar una página/
+  sistema/competidor sorteando el proxy, y entrega un resumen accionable.
+- **nexus-nuevo-cliente**: flujo completo para levantar un cliente nuevo desde el molde (base
+  Supabase, rebrand, módulos, admin, SSO en NEXUS madre, deploy Cloudflare).
+
 ## Mapa de sistemas (referencia)
 
 | Sistema | Repo | Base Supabase | Dominio |
