@@ -18,7 +18,9 @@
    cazando desbordes o detalles a 320–480px. Se puede automatizar con Playwright.
 3. **Pendientes vivos** (ver detalle en la sección PENDIENTES más abajo):
    - Datos reales del Dr.: **exequátur, RNC, ARS** → cargar en `ajustes_negocio`.
-   - Copiar las 4 skills `nexus-*` a los repos **deluxe** y **bayolcell**.
+   - ✅ Copiadas las 4 skills `nexus-*` a **deluxe** (`DELUXE-BEAUTY-CENTER-`) y
+     **bayolcell** (`bayolcell-taller`): pusheadas a la rama `claude/nexus-skills` de cada
+     repo, **pendiente de mezclar** a su rama viva por el dueño.
    - Confirmar que Cloudflare auto-despliega de `main` y tiene las env vars.
 4. **Firecrawl** ya carga en sesión nueva (conector OAuth) para investigar sistemas.
 
@@ -275,8 +277,9 @@ Requiere un `.env` (copiar de `.env.example`) con `VITE_SUPABASE_URL` y `VITE_SU
 
 ### Skills NEXUS PRO (reutilizables, en `.claude/skills/` — viajan committeadas)
 Creadas para todo el ecosistema; **también viven en el molde `amatista-dental`**, así cada
-cliente nuevo que se clone las hereda. Pendiente: copiarlas a **deluxe** y **bayolcell** (repos
-ya existentes que no bajan cambios del molde solos).
+cliente nuevo que se clone las hereda. ✅ Copiadas también a **deluxe**
+(`sterlinr08-dte/DELUXE-BEAUTY-CENTER-`) y **bayolcell** (`sterlinr08-dte/bayolcell-taller`)
+en la rama `claude/nexus-skills` de cada uno (pendiente de merge a su rama viva por el dueño).
 - **nexus-convenciones**: reglas fijas del dueño (móvil primero, sin emojis, marca, RD, RLS,
   imprimible/PDF/WhatsApp, deploy a main). Se activa al tocar UI/código.
 - **nexus-publicar**: puerta de calidad antes de subir a main (build verde, móvil sin desbordes,
