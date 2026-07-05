@@ -1,9 +1,13 @@
 # CLAUDE.md — CONSULTORIO DR. MARCOS CEPEDA
 
+> **ANTES DE HACER O RESPONDER CUALQUIER COSA: leer este archivo completo primero.**
+> Es la fuente de verdad del proyecto (estado, decisiones, reglas del dueño, pendientes).
+> El chat es desechable; el contexto vive AQUÍ. Alimentarse de este archivo antes de actuar,
+> y **mantenerlo al día tras cada cambio importante** (dejarlo listo para el próximo chat).
+
 > Contexto de arranque del proyecto **Consultorio Dr. Marcos Cepeda** (geriatra, cliente del
 > ecosistema **NEXUS PRO**, dueño Sterling / sterlinr08@gmail.com).
 > Idioma de trabajo: **español** (República Dominicana, `es-DO`). Móvil primero. Estética nivel plus.
-> **El chat es desechable; el contexto vive aquí — mantener este archivo al día tras cada cambio importante.**
 
 ## Datos del médico (de su tarjeta de presentación)
 
