@@ -245,6 +245,17 @@ Requiere un `.env` (copiar de `.env.example`) con `VITE_SUPABASE_URL` y `VITE_SU
 - **Claves y secretos: por chat o server-side. JAMÁS en el repo.**
 - **Actualizar este CLAUDE.md tras cada cambio importante.**
 
+## Herramientas del asistente (Claude)
+
+- **Firecrawl** (leer/investigar páginas web completas sin que el proxy bloquee, ej. estudiar
+  otro sistema para alimentarse): disponible por **conector MCP OAuth** en la cuenta de claude.ai
+  del dueño (`sterlinr08@gmail.com`). **NO usa API key en el repo** — es OAuth. Las herramientas
+  `firecrawl` (scrape/crawl/search/map) se cargan **al arrancar cada sesión nueva**; una sesión ya
+  abierta no las toma hasta reabrirla. **La API key JAMÁS va en este archivo ni en el repo**
+  (regla del dueño); si alguna vez se ve una key `fc-...` expuesta, hay que rotarla en el panel.
+- **Playwright CLI**: skill instalado en `.claude/skills/playwright-cli/` (automatizar/navegar
+  páginas). Chromium ya viene en el entorno (`/opt/pw-browsers`); no correr `playwright install`.
+
 ## Mapa de sistemas (referencia)
 
 | Sistema | Repo | Base Supabase | Dominio |
