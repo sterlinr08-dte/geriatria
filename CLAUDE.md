@@ -9,6 +9,19 @@
 > ecosistema **NEXUS PRO**, dueño Sterling / sterlinr08@gmail.com).
 > Idioma de trabajo: **español** (República Dominicana, `es-DO`). Móvil primero. Estética nivel plus.
 
+## AL ABRIR ESTE CHAT — empezar por aquí
+
+1. **Leer este archivo completo** (estado, reglas, pendientes) antes de actuar.
+2. **Prioridad recomendada:** prueba real de la app en producción desde el móvil
+   (`geriatra.nexusprord.com`), recorrido de un paciente de punta a punta (crear
+   paciente → escalas → medicación → mapa corporal → imprimir historia/récipe),
+   cazando desbordes o detalles a 320–480px. Se puede automatizar con Playwright.
+3. **Pendientes vivos** (ver detalle en la sección PENDIENTES más abajo):
+   - Datos reales del Dr.: **exequátur, RNC, ARS** → cargar en `ajustes_negocio`.
+   - Copiar las 4 skills `nexus-*` a los repos **deluxe** y **bayolcell**.
+   - Confirmar que Cloudflare auto-despliega de `main` y tiene las env vars.
+4. **Firecrawl** ya carga en sesión nueva (conector OAuth) para investigar sistemas.
+
 ## Datos del médico (de su tarjeta de presentación)
 
 - **Dr. Marcos Cepeda Espinal** — Geriatra · Enfermedades Neurodegenerativas.
