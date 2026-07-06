@@ -215,6 +215,14 @@ Qué se hizo, en concreto:
     escalas evaluadas) y muestra el IF y "X de N déficits". No es el eFI validado de 36 ítems.
   - **Fase 4 COMPLETA.** Candidatas futuras (baja prioridad): registro de caídas, úlceras por
     presión sobre el mapa corporal, eMAR ligero, hoja del cuidador imprimible/WhatsApp.
+  - ✅ 4.3 **Examen físico por aparatos** (`ValoracionGeriatrica.tsx`): el examen físico dejó de ser
+    un textarea libre; ahora es un **editor por sistemas** (`SISTEMAS_EF`: Piel, Cabeza, Ojos, Nariz,
+    Boca, Cuello, Tórax, Corazón, Pulmones, Abdomen, Extremidades sup./inf., Neurológico) con
+    etiqueta fija + una línea por sistema; el médico solo escribe el hallazgo. Botón **"Llenar
+    normales"** (rellena los vacíos) y **check por sistema** para marcarlo normal; textarea "Otros
+    hallazgos". **Sin cambio de esquema:** se serializa a la MISMA columna `examen_fisico` como
+    líneas `SISTEMA: hallazgo` (`composeEF`/`parseEF`), así imprime igual y los registros viejos
+    (texto libre o con etiquetas, con o sin acento) se leen solos; lo no reconocido va a "Otros".
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
   `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.
   - **SSO (parcial hecho):** en la base madre NEXUS (`tnwsgcxurfyuszxsewsn`), tabla

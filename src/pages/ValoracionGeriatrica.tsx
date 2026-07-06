@@ -27,20 +27,96 @@ function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
-// Plantilla de examen físico normal (base editable, según el formato del Dr.).
-const EXAMEN_NORMAL = `PIEL: Sin lesiones dérmicas, turgencia adecuada a la edad.
-CABEZA: Normocefálico, pelo de adecuada implantación, sin masas ni hundimientos óseos palpables.
-OJOS: Simétricos, escleras anictéricas, conjuntivas normocoloreadas, pupilas 3 mm reactivas a la luz.
-NARIZ: Narinas permeables, sin pólipos visibles ni secreciones.
-BOCA: Mucosa oral húmeda, lengua normoglosa, amígdalas eutróficas.
-CUELLO: Cilíndrico, simétrico, móvil, sin ingurgitación venosa yugular, pulsos carotídeos presentes.
-TÓRAX: Simétrico, normoexpansivo, sin retracciones intercostales ni subcostales.
-CORAZÓN: Ruidos cardíacos regulares, de adecuado tono e intensidad.
-PULMONES: Murmullo vesicular adecuado, sin estertores audibles.
-ABDOMEN: Depresible, no doloroso a la palpación, peristalsis presente, sin visceromegalias palpables.
-EXTREMIDADES SUPERIORES: Simétricas, pulsos periféricos presentes, sin cianosis ni edema.
-EXTREMIDADES INFERIORES: Simétricas, pulsos periféricos presentes, sin cianosis ni edema.
-NEUROLÓGICO: Alerta, orientado en las tres esferas, lenguaje adecuado, sin signos meníngeos, pares craneales conservados, fuerza y sensibilidad adecuadas, coordinación y marcha adecuadas.`
+// Examen físico por aparatos/sistemas. Cada sistema tiene su etiqueta fija y un
+// hallazgo "normal" por defecto (según el formato del Dr.); el médico solo escribe
+// lo positivo que encuentra en cada uno. Se guarda en la columna `examen_fisico`
+// como líneas "SISTEMA: hallazgo" (mismo formato de siempre → imprime igual).
+interface SistemaEF { label: string; normal: string }
+const SISTEMAS_EF: SistemaEF[] = [
+  { label: 'PIEL', normal: 'Sin lesiones dérmicas, turgencia adecuada a la edad.' },
+  { label: 'CABEZA', normal: 'Normocefálico, pelo de adecuada implantación, sin masas ni hundimientos óseos palpables.' },
+  { label: 'OJOS', normal: 'Simétricos, escleras anictéricas, conjuntivas normocoloreadas, pupilas 3 mm reactivas a la luz.' },
+  { label: 'NARIZ', normal: 'Narinas permeables, sin pólipos visibles ni secreciones.' },
+  { label: 'BOCA', normal: 'Mucosa oral húmeda, lengua normoglosa, amígdalas eutróficas.' },
+  { label: 'CUELLO', normal: 'Cilíndrico, simétrico, móvil, sin ingurgitación venosa yugular, pulsos carotídeos presentes.' },
+  { label: 'TÓRAX', normal: 'Simétrico, normoexpansivo, sin retracciones intercostales ni subcostales.' },
+  { label: 'CORAZÓN', normal: 'Ruidos cardíacos regulares, de adecuado tono e intensidad.' },
+  { label: 'PULMONES', normal: 'Murmullo vesicular adecuado, sin estertores audibles.' },
+  { label: 'ABDOMEN', normal: 'Depresible, no doloroso a la palpación, peristalsis presente, sin visceromegalias palpables.' },
+  { label: 'EXTREMIDADES SUPERIORES', normal: 'Simétricas, pulsos periféricos presentes, sin cianosis ni edema.' },
+  { label: 'EXTREMIDADES INFERIORES', normal: 'Simétricas, pulsos periféricos presentes, sin cianosis ni edema.' },
+  { label: 'NEUROLÓGICO', normal: 'Alerta, orientado en las tres esferas, lenguaje adecuado, sin signos meníngeos, pares craneales conservados, fuerza y sensibilidad adecuadas, coordinación y marcha adecuadas.' },
+]
+
+const normLabel = (s: string) => s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+
+// Texto (columna examen_fisico) → { hallazgos por sistema, otros no reconocidos }.
+function parseEF(texto: string): { ef: Record<string, string>; otros: string } {
+  const ef: Record<string, string> = {}
+  const otros: string[] = []
+  for (const linea of (texto || '').split('\n')) {
+    const m = linea.match(/^([^:]+):\s*(.*)$/)
+    const sys = m && SISTEMAS_EF.find((s) => normLabel(s.label) === normLabel(m[1]))
+    if (sys) ef[sys.label] = m[2].trim()
+    else if (linea.trim()) otros.push(linea)
+  }
+  return { ef, otros: otros.join('\n') }
+}
+
+// { hallazgos por sistema, otros } → texto de la columna examen_fisico.
+function composeEF(ef: Record<string, string>, otros: string): string {
+  const lineas = SISTEMAS_EF.filter((s) => (ef[s.label] || '').trim()).map((s) => `${s.label}: ${ef[s.label].trim()}`)
+  if (otros.trim()) lineas.push(otros.trim())
+  return lineas.join('\n')
+}
+
+// Editor del examen físico por sistemas. Controlado sobre el string examen_fisico.
+function ExamenFisicoEditor({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  const { ef, otros } = parseEF(value)
+  const setSistema = (label: string, texto: string) => onChange(composeEF({ ...ef, [label]: texto }, otros))
+  const llenarNormales = () => {
+    const nuevo = { ...ef }
+    for (const s of SISTEMAS_EF) if (!(nuevo[s.label] || '').trim()) nuevo[s.label] = s.normal
+    onChange(composeEF(nuevo, otros))
+  }
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={llenarNormales}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-100"
+        >
+          <FileText size={14} /> Llenar normales
+        </button>
+      </div>
+      {SISTEMAS_EF.map((s) => (
+        <div key={s.label} className="flex items-start gap-2">
+          <span className="w-24 shrink-0 pt-2 text-[11px] font-semibold leading-tight text-slate-500 sm:w-40">{s.label}</span>
+          <input
+            className="input flex-1 text-sm"
+            placeholder="hallazgo…"
+            value={ef[s.label] ?? ''}
+            onChange={(e) => setSistema(s.label, e.target.value)}
+          />
+          <button
+            type="button"
+            title="Marcar normal"
+            onClick={() => setSistema(s.label, s.normal)}
+            className="mt-0.5 shrink-0 rounded-lg p-2 text-slate-400 hover:bg-brand-50 hover:text-brand-600"
+          >
+            <Check size={15} />
+          </button>
+        </div>
+      ))}
+      <div className="pt-1">
+        <label className="label">Otros hallazgos</label>
+        <textarea className="input text-sm" rows={2} placeholder="Cualquier hallazgo fuera de los sistemas anteriores…"
+          value={otros} onChange={(e) => onChange(composeEF(ef, e.target.value))} />
+      </div>
+    </div>
+  )
+}
 
 const vacio = {
   fecha_valoracion: hoyISO(),
@@ -443,17 +519,9 @@ export default function ValoracionGeriatrica({ pacienteFijo }: { pacienteFijo?: 
 
           {/* Examen físico */}
           <div className="card space-y-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <Seccion>Examen físico</Seccion>
-              <button
-                type="button"
-                onClick={() => set({ examen_fisico: form.examen_fisico.trim() ? form.examen_fisico : EXAMEN_NORMAL })}
-                className="inline-flex items-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-100"
-              >
-                <FileText size={14} /> Usar plantilla de examen normal
-              </button>
-            </div>
-            <textarea className="input font-mono text-xs leading-relaxed" rows={12} placeholder="Exploración por sistemas…" value={form.examen_fisico} onChange={(e) => set({ examen_fisico: e.target.value })} />
+            <Seccion>Examen físico</Seccion>
+            <p className="-mt-1 text-xs text-slate-500">Escribe solo el hallazgo de cada sistema; usa el check para marcarlo normal, o «Llenar normales» para los que falten.</p>
+            <ExamenFisicoEditor value={form.examen_fisico} onChange={(v) => set({ examen_fisico: v })} />
             <Texto label="EKG" rows={2} value={form.ekg} onChange={(v) => set({ ekg: v })} />
           </div>
 
