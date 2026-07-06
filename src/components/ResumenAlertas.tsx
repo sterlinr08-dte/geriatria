@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Pill, ShieldAlert, Syringe, Activity, HeartPulse } from 'lucide-react'
+import { Pill, ShieldAlert, Syringe, Activity, HeartPulse, Brain } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { hoyISO } from '../lib/format'
 import { revisarMedicamento, UMBRAL_POLIFARMACIA } from '../lib/medicamentos'
+import { cargaAnticolinergica } from '../lib/cargaFarmacologica'
 import { escalaPorKey } from '../lib/escalas'
 import { calcularFragilidad, Fragilidad, DESCARGO_FRAGILIDAD } from '../lib/fragilidad'
 
@@ -38,6 +39,7 @@ export default function ResumenAlertas({ pacienteId }: { pacienteId: string }) {
       const activos = (meds.data ?? []).filter((m: any) => m.activo)
       const polifarmacia = activos.length >= UMBRAL_POLIFARMACIA
       const inapropiados = activos.filter((m: any) => revisarMedicamento(m.nombre).length > 0)
+      const acb = cargaAnticolinergica(activos.map((m: any) => m.nombre))
       const vencidas = (vac.data ?? []).filter((v: any) => v.proxima && v.proxima < hoy)
 
       // Última aplicación de cada escala (esc viene ordenado por fecha desc)
@@ -58,13 +60,15 @@ export default function ResumenAlertas({ pacienteId }: { pacienteId: string }) {
       const a: Alerta[] = []
       if (polifarmacia) a.push({ icon: Pill, color: 'amber', texto: `Polifarmacia — ${activos.length} medicamentos activos` })
       if (inapropiados.length) a.push({ icon: ShieldAlert, color: 'rose', texto: `${inapropiados.length} medicamento(s) potencialmente inapropiado(s)` })
+      if (acb.nivel === 'significativa') a.push({ icon: Brain, color: 'rose', texto: `Carga anticolinérgica alta (ACB ${acb.total})` })
       if (vencidas.length) a.push({ icon: Syringe, color: 'orange', texto: `${vencidas.length} vacuna(s) vencida(s)` })
       rojas.forEach((r) => a.push({ icon: Activity, color: r.tono === 'rose' ? 'rose' : 'orange', texto: `${r.sigla}: ${r.texto}` }))
 
       setAlertas(a)
       setFrag(calcularFragilidad({
         polifarmacia, multimorbilidad: cronicos >= 3, escalasAlteradas: rojas.length,
-        caidas, medicacionInapropiada: inapropiados.length > 0,
+        escalasEvaluadas: ultima.size, caidas, medicacionInapropiada: inapropiados.length > 0,
+        cargaAnticolinergica: acb.nivel === 'significativa',
       }))
       setLoading(false)
     })()
@@ -81,13 +85,14 @@ export default function ResumenAlertas({ pacienteId }: { pacienteId: string }) {
         <span className="ml-auto inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold"
           style={{ background: frag.color + '22', color: frag.color }}>
           <span className="inline-block h-2 w-2 rounded-full" style={{ background: frag.color }} />
-          {frag.label}
+          {frag.label} · IF {frag.indice.toFixed(2)}
         </span>
       </div>
 
-      {frag.deficits.length > 0 && (
-        <p className="mb-2 text-xs text-slate-500">Fragilidad por: {frag.deficits.join(' · ')}.</p>
-      )}
+      <p className="mb-2 text-xs text-slate-500">
+        Índice de fragilidad {frag.indice.toFixed(2)} ({frag.presentes} de {frag.evaluados} déficits)
+        {frag.deficits.length > 0 && <> — {frag.deficits.join(' · ')}</>}.
+      </p>
 
       {alertas.length > 0 ? (
         <div className="flex flex-wrap gap-2">

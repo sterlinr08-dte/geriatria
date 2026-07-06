@@ -199,6 +199,22 @@ Qué se hizo, en concreto:
   - ✅ **Mini-Cog** (cribado cognitivo con test del reloj) agregado a `lib/escalas.ts` (aparece solo
     en Escalas/Tendencias/alertas). MoCA/MMSE tienen licencia; Mini-Cog es de uso libre.
   - Pendiente general: exequátur y ARS del Dr.; subdominio bonito.
+- **Fase 4 — desprescripción + fragilidad formal (hecho):** cerrar la brecha vs. los mejores
+  programas geriátricos del mundo (GEHRIMED/PointClickCare/CGA digital), investigada por WebSearch.
+  - ✅ 4.1 **Carga anticolinérgica (ACB) + carga sedante** (`lib/cargaFarmacologica.ts` +
+    panel en `MedicacionPaciente.tsx`): `cargaAnticolinergica()` puntúa cada activo por la escala
+    **ACB** (1/2/3 por principio activo, lista curada) → total + interpretación (≥3 = carga
+    clínicamente significativa: riesgo cognitivo/caídas/mortalidad, valorar desprescribir).
+    `cargaSedante()` cuenta fármacos sedantes (aprox. al componente sedante del **Drug Burden
+    Index**; el DBI formal necesita dosis). Chips ACB/sedante en el encabezado + panel con
+    desglose por fármaco. Orientativo, con descargo.
+  - ✅ 4.2 **Índice de fragilidad FORMAL por acumulación de déficits** (Rockwood): `lib/fragilidad.ts`
+    ahora devuelve un **índice 0–1** = déficits presentes / evaluados (5 clínicos base + escalas
+    aplicadas), con cortes ≤0.12 robusto · ≤0.25 leve · ≤0.40 moderada · >0.40 severa. Suma la
+    **carga anticolinérgica alta** como déficit. `ResumenAlertas.tsx` lo alimenta (ACB + nº de
+    escalas evaluadas) y muestra el IF y "X de N déficits". No es el eFI validado de 36 ítems.
+  - **Fase 4 COMPLETA.** Candidatas futuras (baja prioridad): registro de caídas, úlceras por
+    presión sobre el mapa corporal, eMAR ligero, hoja del cuidador imprimible/WhatsApp.
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
   `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.
   - **SSO (parcial hecho):** en la base madre NEXUS (`tnwsgcxurfyuszxsewsn`), tabla

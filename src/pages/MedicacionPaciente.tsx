@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Pill, Plus, Pencil, Trash2, Save, AlertTriangle, Power, ShieldAlert } from 'lucide-react'
+import { Pill, Plus, Pencil, Trash2, Save, AlertTriangle, Power, ShieldAlert, Brain, Moon } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { Cliente } from '../types'
 import { fechaCorta, hoyISO } from '../lib/format'
 import { revisarMedicamento, UMBRAL_POLIFARMACIA, DESCARGO } from '../lib/medicamentos'
+import { cargaAnticolinergica, cargaSedante, DESCARGO_CARGA } from '../lib/cargaFarmacologica'
 import PageHeader from '../components/PageHeader'
 import Cargando from '../components/Cargando'
 import Modal from '../components/Modal'
@@ -91,6 +92,9 @@ export default function MedicacionPaciente({ pacienteFijo }: { pacienteFijo?: st
   // Alertas de medicación inapropiada sobre los activos
   const conAlertas = activos.map((m) => ({ m, alertas: revisarMedicamento(m.nombre) })).filter((x) => x.alertas.length > 0)
   const nAlto = conAlertas.reduce((s, x) => s + x.alertas.filter((a) => a.gravedad === 'alto').length, 0)
+  // Carga anticolinérgica (ACB) y sedante de los medicamentos activos
+  const acb = cargaAnticolinergica(activos.map((m) => m.nombre))
+  const sed = cargaSedante(activos.map((m) => m.nombre))
 
   // Alertas del formulario en vivo
   const alertasForm = revisarMedicamento(form.nombre)
@@ -129,6 +133,16 @@ export default function MedicacionPaciente({ pacienteFijo }: { pacienteFijo?: st
                   <ShieldAlert size={13} /> {conAlertas.length} con alerta{nAlto ? ` · ${nAlto} de riesgo alto` : ''}
                 </span>
               )}
+              {acb.total > 0 && (
+                <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${acb.nivel === 'significativa' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-800'}`}>
+                  <Brain size={13} /> ACB {acb.total}
+                </span>
+              )}
+              {sed.total > 0 && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-semibold text-brand-700">
+                  <Moon size={13} /> {sed.total} sedante(s)
+                </span>
+              )}
             </div>
             <button className="btn-primary" onClick={nuevo}><Plus size={16} /> Agregar medicamento</button>
           </div>
@@ -153,6 +167,39 @@ export default function MedicacionPaciente({ pacienteFijo }: { pacienteFijo?: st
                 )}
               </ul>
               <p className="mt-2 text-[11px] text-slate-500">{DESCARGO}</p>
+            </div>
+          )}
+
+          {/* Panel de carga anticolinérgica y sedante (desprescripción) */}
+          {(acb.total > 0 || sed.total > 0) && (
+            <div className={`rounded-2xl border-2 p-4 ${acb.nivel === 'significativa' ? 'border-rose-200 bg-rose-50/50' : 'border-amber-200 bg-amber-50/40'}`}>
+              <h3 className="mb-2 flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-slate-700">
+                <Brain size={15} /> Carga anticolinérgica y sedante
+              </h3>
+              <div className="flex flex-wrap gap-4">
+                <div>
+                  <p className={`text-2xl font-bold ${acb.nivel === 'significativa' ? 'text-rose-600' : acb.nivel === 'baja' ? 'text-amber-700' : 'text-emerald-600'}`}>ACB {acb.total}</p>
+                  <p className="text-xs text-slate-500">Carga anticolinérgica</p>
+                </div>
+                <div>
+                  <p className="text-2xl font-bold text-brand-600">{sed.total}</p>
+                  <p className="text-xs text-slate-500">Fármaco(s) sedante(s)</p>
+                </div>
+              </div>
+              <p className="mt-2 text-sm text-slate-700">{acb.interpretacion}</p>
+              {acb.detalle.length > 0 && (
+                <ul className="mt-2 flex flex-wrap gap-1.5">
+                  {acb.detalle.map((d, i) => (
+                    <li key={'a' + i} className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-xs text-slate-600 ring-1 ring-slate-200">
+                      {d.nombre} <span className="font-semibold text-brand-700">+{d.puntos}</span> <span className="text-slate-400">· {d.grupo}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {sed.total >= 2 && (
+                <p className="mt-2 text-xs text-brand-700"><b>Sedantes:</b> {sed.detalle.map((d) => d.nombre).join(', ')} — la suma de sedantes aumenta el riesgo de caídas; valorar desprescribir.</p>
+              )}
+              <p className="mt-2 text-[11px] text-slate-500">{DESCARGO_CARGA}</p>
             </div>
           )}
 
