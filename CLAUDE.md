@@ -216,8 +216,8 @@ Qué se hizo, en concreto:
   - **Fase 4 COMPLETA.** Candidatas futuras (baja prioridad): registro de caídas, úlceras por
     presión sobre el mapa corporal, eMAR ligero, hoja del cuidador imprimible/WhatsApp.
   - ✅ 4.3 **Examen físico por aparatos** (`ValoracionGeriatrica.tsx`): el examen físico dejó de ser
-    un textarea libre; ahora es un **editor por sistemas** (`SISTEMAS_EF`: Piel, Cabeza, Ojos, Nariz,
-    Boca, Cuello, Tórax, Corazón, Pulmones, Abdomen, Extremidades sup./inf., Neurológico) con
+    un textarea libre; ahora es un **editor por sistemas** (`SISTEMAS_EF`, lista del Dr.: Cabeza,
+    Ojos, Cuello, Tórax, Corazón, Pulmones, Abdomen, Extremidades sup./inf., Neurológico) con
     etiqueta fija + una línea por sistema; el médico solo escribe el hallazgo. Botón **"Llenar
     normales"** (rellena los vacíos) y **check por sistema** para marcarlo normal; textarea "Otros
     hallazgos". **Sin cambio de esquema:** se serializa a la MISMA columna `examen_fisico` como

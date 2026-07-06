@@ -33,19 +33,16 @@ function esc(s: string): string {
 // como líneas "SISTEMA: hallazgo" (mismo formato de siempre → imprime igual).
 interface SistemaEF { label: string; normal: string }
 const SISTEMAS_EF: SistemaEF[] = [
-  { label: 'PIEL', normal: 'Sin lesiones dérmicas, turgencia adecuada a la edad.' },
-  { label: 'CABEZA', normal: 'Normocefálico, pelo de adecuada implantación, sin masas ni hundimientos óseos palpables.' },
-  { label: 'OJOS', normal: 'Simétricos, escleras anictéricas, conjuntivas normocoloreadas, pupilas 3 mm reactivas a la luz.' },
-  { label: 'NARIZ', normal: 'Narinas permeables, sin pólipos visibles ni secreciones.' },
-  { label: 'BOCA', normal: 'Mucosa oral húmeda, lengua normoglosa, amígdalas eutróficas.' },
-  { label: 'CUELLO', normal: 'Cilíndrico, simétrico, móvil, sin ingurgitación venosa yugular, pulsos carotídeos presentes.' },
-  { label: 'TÓRAX', normal: 'Simétrico, normoexpansivo, sin retracciones intercostales ni subcostales.' },
-  { label: 'CORAZÓN', normal: 'Ruidos cardíacos regulares, de adecuado tono e intensidad.' },
-  { label: 'PULMONES', normal: 'Murmullo vesicular adecuado, sin estertores audibles.' },
-  { label: 'ABDOMEN', normal: 'Depresible, no doloroso a la palpación, peristalsis presente, sin visceromegalias palpables.' },
-  { label: 'EXTREMIDADES SUPERIORES', normal: 'Simétricas, pulsos periféricos presentes, sin cianosis ni edema.' },
-  { label: 'EXTREMIDADES INFERIORES', normal: 'Simétricas, pulsos periféricos presentes, sin cianosis ni edema.' },
-  { label: 'NEUROLÓGICO', normal: 'Alerta, orientado en las tres esferas, lenguaje adecuado, sin signos meníngeos, pares craneales conservados, fuerza y sensibilidad adecuadas, coordinación y marcha adecuadas.' },
+  { label: 'Cabeza', normal: 'Normocefálico, pelo de adecuada implantación, sin masas ni hundimientos óseos palpables.' },
+  { label: 'Ojos', normal: 'Simétricos, escleras anictéricas, conjuntivas normocoloreadas, pupilas 3 mm reactivas a la luz.' },
+  { label: 'Cuello', normal: 'Cilíndrico, simétrico, móvil, sin ingurgitación venosa yugular, pulsos carotídeos presentes.' },
+  { label: 'Tórax', normal: 'Simétrico, normoexpansivo, sin retracciones intercostales ni subcostales.' },
+  { label: 'Corazón', normal: 'Ruidos cardíacos regulares, de adecuado tono e intensidad.' },
+  { label: 'Pulmones', normal: 'Murmullo vesicular adecuado, sin estertores audibles.' },
+  { label: 'Abdomen', normal: 'Depresible, no doloroso a la palpación, peristalsis presente, sin visceromegalias palpables.' },
+  { label: 'Extremidades superiores', normal: 'Simétricas, pulsos periféricos presentes, sin cianosis ni edema.' },
+  { label: 'Extremidades inferiores', normal: 'Simétricas, pulsos periféricos presentes, sin cianosis ni edema.' },
+  { label: 'Neurológico', normal: 'Alerta, orientado en las tres esferas, lenguaje adecuado, sin signos meníngeos, pares craneales conservados, fuerza y sensibilidad adecuadas, coordinación y marcha adecuadas.' },
 ]
 
 const normLabel = (s: string) => s.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -92,7 +89,7 @@ function ExamenFisicoEditor({ value, onChange }: { value: string; onChange: (v: 
       </div>
       {SISTEMAS_EF.map((s) => (
         <div key={s.label} className="flex items-start gap-2">
-          <span className="w-24 shrink-0 pt-2 text-[11px] font-semibold leading-tight text-slate-500 sm:w-40">{s.label}</span>
+          <span className="w-24 shrink-0 pt-2 text-[11px] font-semibold leading-tight text-slate-500 sm:w-44">{s.label}:</span>
           <input
             className="input flex-1 text-sm"
             placeholder="hallazgo…"
