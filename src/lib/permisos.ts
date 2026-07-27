@@ -37,6 +37,7 @@ export const MODULOS: Modulo[] = [
   { key: 'contabilidad', label: 'Contabilidad', path: '/contabilidad' },
   { key: 'reportes', label: 'Reportes', path: '/reportes' },
   { key: 'indicadores', label: 'Indicadores', path: '/indicadores' },
+  { key: 'procesos', label: 'Reglamentos / Procesos', path: '/procesos' },
   { key: 'configuracion', label: 'Configuración', path: '/configuracion' },
 ]
 

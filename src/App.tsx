@@ -32,6 +32,7 @@ import Indicadores from './pages/Indicadores'
 import Chat from './pages/Chat'
 import Tareas from './pages/Tareas'
 import Avisos from './pages/Avisos'
+import Procesos from './pages/Procesos'
 import Configuracion from './pages/Configuracion'
 import Login from './pages/Login'
 import Cargando from './components/Cargando'
@@ -147,6 +148,7 @@ export default function App() {
               <Route path="/tareas" element={<Protegido modulo="tareas"><Tareas /></Protegido>} />
               {/* Avisos: visibles para todo el personal (no se restringe por módulo) */}
               <Route path="/avisos" element={<Avisos />} />
+              <Route path="/procesos" element={<Protegido modulo="procesos"><Procesos /></Protegido>} />
               <Route path="/configuracion" element={<Protegido modulo="configuracion"><Configuracion /></Protegido>} />
             </Routes>
           </div>

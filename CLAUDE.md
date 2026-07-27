@@ -223,6 +223,13 @@ Qué se hizo, en concreto:
     hallazgos". **Sin cambio de esquema:** se serializa a la MISMA columna `examen_fisico` como
     líneas `SISTEMA: hallazgo` (`composeEF`/`parseEF`), así imprime igual y los registros viejos
     (texto libre o con etiquetas, con o sin acento) se leen solos; lo no reconocido va a "Otros".
+- **Fase 5 — Reglamentos / Procesos administrativos (hecho):** módulo `Procesos.tsx` (`pages/`,
+  ruta `/procesos`, módulo `procesos` en `permisos.ts` + Sidebar grupo Configuración) para
+  documentar los **procesos/reglamentos operativos del consultorio** (no clínico). Tabla nueva
+  `procesos` con RLS estilo `avisos` (**todos leen, solo admin edita** vía `es_admin()`): código,
+  título, categoría, objetivo, responsable, `pasos` (jsonb, uno por línea), notas, activo/orden.
+  Agrupa por categoría; CRUD (admin); **imprime** cada proceso y el **manual completo** con membrete
+  del consultorio. Sembrados 4 procesos de arranque (admisión, cita, consulta, cobro) editables.
 - **Fase 3 — deploy:** Cloudflare Pages (build `npm run build`, salida `dist`, env
   `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY`), subdominio `geriatra.nexusprord.com`.
   - **SSO (parcial hecho):** en la base madre NEXUS (`tnwsgcxurfyuszxsewsn`), tabla

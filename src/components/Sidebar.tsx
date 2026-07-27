@@ -28,6 +28,7 @@ import {
   MessagesSquare,
   ListChecks,
   Megaphone,
+  Workflow,
   X,
 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
@@ -79,6 +80,7 @@ const grupos: { titulo: string; links: Link[] }[] = [
   {
     titulo: 'Configuración',
     links: [
+      { to: '/procesos', label: 'Reglamentos / Procesos', icon: Workflow, modulo: 'procesos' },
       { to: '/configuracion', label: 'Configuración', icon: Settings, modulo: 'configuracion' },
       { to: '/empleados', label: 'Empleados', icon: UserCog, modulo: 'empleados' },
     ],
