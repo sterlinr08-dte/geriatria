@@ -1,9 +1,9 @@
 {
-  "name": "consultorio-geriatria",
+  "name": "avicola-erp",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.1.0",
   "type": "module",
-  "description": "Sistema clínico para el Consultorio Geriátrico (ecosistema NEXUS PRO)",
+  "description": "ERP integral para granjas de gallinas ponedoras: producción, sanidad, inventario, ventas y rentabilidad",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
