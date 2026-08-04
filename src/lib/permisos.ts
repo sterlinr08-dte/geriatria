@@ -1,38 +1,13 @@
-// Catálogo único de módulos de AVÍCOLA ERP.
+import { AVICOLA_MODULES, AVICOLA_MODULE_KEYS } from '../core/modules'
+
 export interface Modulo {
   key: string
   label: string
   path: string
 }
 
-export const MODULOS: Modulo[] = [
-  { key: 'panel', label: 'Dashboard', path: '/' },
-  { key: 'granjas', label: 'Granjas', path: '/granjas' },
-  { key: 'galpones', label: 'Galpones', path: '/galpones' },
-  { key: 'lotes', label: 'Lotes de gallinas', path: '/lotes' },
-  { key: 'produccion', label: 'Producción diaria', path: '/produccion' },
-  { key: 'recoleccion', label: 'Recolección', path: '/recoleccion' },
-  { key: 'clasificacion', label: 'Clasificación', path: '/clasificacion' },
-  { key: 'empaque', label: 'Empaque', path: '/empaque' },
-  { key: 'inventario_huevos', label: 'Inventario de huevos', path: '/inventario-huevos' },
-  { key: 'inventario_alimentos', label: 'Inventario de alimentos', path: '/inventario-alimentos' },
-  { key: 'consumo', label: 'Consumo de alimento', path: '/consumo' },
-  { key: 'sanidad', label: 'Sanidad', path: '/sanidad' },
-  { key: 'mortalidad', label: 'Mortalidad', path: '/mortalidad' },
-  { key: 'calidad', label: 'Calidad', path: '/calidad' },
-  { key: 'compras', label: 'Compras', path: '/compras' },
-  { key: 'proveedores', label: 'Proveedores', path: '/proveedores' },
-  { key: 'clientes', label: 'Clientes', path: '/clientes' },
-  { key: 'ventas', label: 'Ventas', path: '/ventas' },
-  { key: 'cuentas_cobrar', label: 'Cuentas por cobrar', path: '/cuentas-cobrar' },
-  { key: 'cuentas_pagar', label: 'Cuentas por pagar', path: '/cuentas-pagar' },
-  { key: 'gastos', label: 'Gastos', path: '/gastos' },
-  { key: 'rentabilidad', label: 'Rentabilidad', path: '/rentabilidad' },
-  { key: 'reportes', label: 'Centro de inteligencia', path: '/reportes' },
-  { key: 'configuracion', label: 'Configuración', path: '/configuracion' },
-]
-
-export const TODOS_MODULOS = MODULOS.map((m) => m.key)
+export const MODULOS: Modulo[] = AVICOLA_MODULES.map(({ key, label, path }) => ({ key, label, path }))
+export const TODOS_MODULOS = AVICOLA_MODULE_KEYS
 
 export interface Accion {
   key: string
