@@ -6,43 +6,67 @@ import {
 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
 
-const grupos = [
+type LinkItem = readonly [to: string, label: string, icon: typeof Home, modulo: string]
+
+type Grupo = {
+  titulo: string
+  links: readonly LinkItem[]
+}
+
+const grupos: readonly Grupo[] = [
   {
     titulo: 'Operación',
     links: [
-      ['/', 'Dashboard', Home], ['/granjas', 'Granjas', Building2], ['/galpones', 'Galpones', Store],
-      ['/lotes', 'Lotes de gallinas', Bird], ['/produccion', 'Producción diaria', Egg],
-      ['/recoleccion', 'Recolección', ClipboardList], ['/clasificacion', 'Clasificación', Boxes],
-      ['/empaque', 'Empaque', Package],
+      ['/', 'Dashboard', Home, 'panel'],
+      ['/granjas', 'Granjas', Building2, 'granjas'],
+      ['/galpones', 'Galpones', Store, 'galpones'],
+      ['/lotes', 'Lotes de gallinas', Bird, 'lotes'],
+      ['/produccion', 'Producción diaria', Egg, 'produccion'],
+      ['/recoleccion', 'Recolección', ClipboardList, 'recoleccion'],
+      ['/clasificacion', 'Clasificación', Boxes, 'clasificacion'],
+      ['/empaque', 'Empaque', Package, 'empaque'],
     ],
   },
   {
     titulo: 'Inventario y sanidad',
     links: [
-      ['/inventario-huevos', 'Inventario de huevos', Egg], ['/inventario-alimentos', 'Inventario de alimentos', Wheat],
-      ['/consumo', 'Consumo de alimento', BarChart3], ['/sanidad', 'Sanidad', ShieldCheck],
-      ['/mortalidad', 'Mortalidad', HeartPulse], ['/calidad', 'Calidad', ThermometerSun],
+      ['/inventario-huevos', 'Inventario de huevos', Egg, 'inventario_huevos'],
+      ['/inventario-alimentos', 'Inventario de alimentos', Wheat, 'inventario_alimentos'],
+      ['/consumo', 'Consumo de alimento', BarChart3, 'consumo'],
+      ['/sanidad', 'Sanidad', ShieldCheck, 'sanidad'],
+      ['/mortalidad', 'Mortalidad', HeartPulse, 'mortalidad'],
+      ['/calidad', 'Calidad', ThermometerSun, 'calidad'],
     ],
   },
   {
     titulo: 'Comercial y finanzas',
     links: [
-      ['/compras', 'Compras', ShoppingCart], ['/proveedores', 'Proveedores', Truck], ['/clientes', 'Clientes', Users],
-      ['/ventas', 'Ventas', Receipt], ['/cuentas-cobrar', 'Cuentas por cobrar', WalletCards],
-      ['/cuentas-pagar', 'Cuentas por pagar', WalletCards], ['/gastos', 'Gastos', WalletCards],
-      ['/rentabilidad', 'Rentabilidad', TrendingUp],
+      ['/compras', 'Compras', ShoppingCart, 'compras'],
+      ['/proveedores', 'Proveedores', Truck, 'proveedores'],
+      ['/clientes', 'Clientes', Users, 'clientes'],
+      ['/ventas', 'Ventas', Receipt, 'ventas'],
+      ['/cuentas-cobrar', 'Cuentas por cobrar', WalletCards, 'cuentas_cobrar'],
+      ['/cuentas-pagar', 'Cuentas por pagar', WalletCards, 'cuentas_pagar'],
+      ['/gastos', 'Gastos', WalletCards, 'gastos'],
+      ['/rentabilidad', 'Rentabilidad', TrendingUp, 'rentabilidad'],
     ],
   },
   {
     titulo: 'Administración',
-    links: [['/reportes', 'Centro de inteligencia', FileBarChart], ['/configuracion', 'Configuración', Settings]],
+    links: [
+      ['/reportes', 'Centro de inteligencia', FileBarChart, 'reportes'],
+      ['/configuracion', 'Configuración', Settings, 'configuracion'],
+    ],
   },
-] as const
+]
 
 interface Props { open: boolean; onClose: () => void }
 
 export default function Sidebar({ open, onClose }: Props) {
-  const { perfil, signOut } = useAuth()
+  const { perfil, signOut, puede } = useAuth()
+  const gruposVisibles = grupos
+    .map((grupo) => ({ ...grupo, links: grupo.links.filter(([, , , modulo]) => puede(modulo)) }))
+    .filter((grupo) => grupo.links.length > 0)
 
   return (
     <>
@@ -54,11 +78,11 @@ export default function Sidebar({ open, onClose }: Props) {
             <p className="text-[17px] font-bold tracking-tight">AVÍCOLA ERP</p>
             <p className="text-[10px] uppercase tracking-[0.18em] text-emerald-200">Enterprise 2026</p>
           </div>
-          <button onClick={onClose} className="ml-auto rounded-lg p-1.5 text-white/70 hover:bg-white/10 lg:hidden"><X size={20} /></button>
+          <button onClick={onClose} className="ml-auto rounded-lg p-1.5 text-white/70 hover:bg-white/10 lg:hidden" aria-label="Cerrar menú"><X size={20} /></button>
         </div>
 
-        <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
-          {grupos.map((grupo) => (
+        <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4" aria-label="Navegación principal">
+          {gruposVisibles.map((grupo) => (
             <section key={grupo.titulo}>
               <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200/70">{grupo.titulo}</p>
               <div className="space-y-1">
@@ -75,7 +99,7 @@ export default function Sidebar({ open, onClose }: Props) {
         <div className="border-t border-white/10 p-3">
           <div className="mb-2 rounded-xl bg-white/7 px-3 py-2.5">
             <p className="truncate text-xs font-semibold">{perfil?.nombre || perfil?.username || 'Administrador'}</p>
-            <p className="mt-0.5 text-[11px] text-emerald-200/70">Granja Principal</p>
+            <p className="mt-0.5 text-[11px] text-emerald-200/70">{perfil?.rol_nombre || 'Granja Principal'}</p>
           </div>
           <button onClick={signOut} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-emerald-100 transition hover:bg-white/10 hover:text-white"><LogOut size={17} /> Cerrar sesión</button>
         </div>
