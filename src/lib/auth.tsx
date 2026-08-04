@@ -33,14 +33,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const cargarPerfil = useCallback(async (userId: string) => {
-    const { data } = await supabase
-      .from('perfiles')
-      .select('*, roles(nombre, permisos, es_admin)')
-      .eq('id', userId)
-      .maybeSingle()
-
+    const { data } = await supabase.from('perfiles').select('*, roles(nombre, permisos, es_admin)').eq('id', userId).maybeSingle()
     if (!data) {
-      // Usuario sin perfil asignado: acceso mínimo
       setPerfil({ id: userId, nombre: null, username: null, email: null, rol_key: null, activo: true, permisos: ['panel'], es_admin: false })
       return
     }
@@ -61,8 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let done = false
-    const RELOAD_KEY = 'geriatria-recarga-sesion'
-
+    const RELOAD_KEY = 'avicola-erp-recarga-sesion'
     const listo = () => {
       if (done) return
       done = true
@@ -70,20 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionStorage.removeItem(RELOAD_KEY)
       setLoading(false)
     }
-
-    // Red de seguridad: al reabrir la app tras un rato inactivo, Supabase a veces
-    // deja la sesión "colgada" (lock del navegador) y getSession() nunca responde,
-    // por lo que la pantalla se queda cargando. Si en 8s no resolvió, recargamos
-    // UNA vez (equivale a "actualizar" a mano); si tras recargar sigue, quitamos
-    // el spinner para no dejar la app trancada.
     const watchdog = setTimeout(() => {
       if (done) return
       if (!sessionStorage.getItem(RELOAD_KEY)) {
         sessionStorage.setItem(RELOAD_KEY, '1')
         window.location.reload()
-      } else {
-        setLoading(false)
-      }
+      } else setLoading(false)
     }, 8000)
 
     supabase.auth.getSession().then(async ({ data }) => {
@@ -94,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, s) => {
       setSession(s)
-      if (s) { try { await cargarPerfil(s.user.id) } catch { /* ignore */ } }
+      if (s) { try { await cargarPerfil(s.user.id) } catch { /* no bloquear */ } }
       else setPerfil(null)
       listo()
     })
@@ -107,12 +92,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   async function signOut() {
-    // scope 'local' = cierra la sesión localmente sin llamada de red (evita que se
-    // cuelgue y no llegue al redirect). El try/catch garantiza que SIEMPRE redirige.
-    try { await supabase.auth.signOut({ scope: 'local' }) } catch { /* ignorar */ }
+    try { await supabase.auth.signOut({ scope: 'local' }) } catch { /* garantizar salida local */ }
     setPerfil(null)
-    // Volver a la puerta central (NEXUS), no al login propio del consultorio.
-    window.location.replace('https://nexusprord.com')
+    window.location.replace('/')
   }
 
   async function recargarPerfil() {
@@ -121,14 +103,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const permisos = perfil?.permisos ?? []
   const puede = (modulo: string) => permisos.includes(modulo)
-  // El admin puede todas las funciones; los demás según su rol.
   const puedeAccion = (accion: string) => !!perfil?.es_admin || permisos.includes(accion)
 
-  return (
-    <AuthContext.Provider value={{ session, perfil, permisos, puede, puedeAccion, loading, signIn, signOut, recargarPerfil }}>
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={{ session, perfil, permisos, puede, puedeAccion, loading, signIn, signOut, recargarPerfil }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
