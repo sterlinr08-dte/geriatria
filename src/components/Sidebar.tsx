@@ -1,175 +1,83 @@
 import { NavLink } from 'react-router-dom'
 import {
-  CalendarDays,
-  Users,
-  Stethoscope,
-  HeartPulse,
-  FileText,
-  Image,
-  Pill,
-  Bell,
-  ClipboardCheck,
-  BellRing,
-  PenLine,
-  IdCard,
-  UserCog,
-  LayoutDashboard,
-  LogOut,
-  Receipt,
-  ShoppingCart,
-  Wallet,
-  Calculator,
-  Settings,
-  Package,
-  Armchair,
-  HandCoins,
-  FileBarChart,
-  Gauge,
-  MessagesSquare,
-  ListChecks,
-  Megaphone,
-  Workflow,
-  X,
+  BarChart3, Bird, Boxes, Building2, ClipboardList, Egg, FileBarChart, HeartPulse,
+  Home, Package, Receipt, Settings, ShoppingCart, Store, ThermometerSun, TrendingUp,
+  Truck, Users, WalletCards, Wheat, X, LogOut, ShieldCheck
 } from 'lucide-react'
 import { useAuth } from '../lib/auth'
-import { useChatNoLeidos } from '../lib/useChatNoLeidos'
 
-type Link = { to: string; label: string; icon: typeof Users; modulo: string; end?: boolean; oculto?: boolean; siempre?: boolean }
-
-const grupos: { titulo: string; links: Link[] }[] = [
+const grupos = [
   {
-    titulo: 'Clínica',
+    titulo: 'Operación',
     links: [
-      { to: '/', label: 'Panel', icon: LayoutDashboard, modulo: 'panel', end: true },
-      { to: '/citas', label: 'Citas / Agenda', icon: CalendarDays, modulo: 'citas' },
-      { to: '/clientes', label: 'Pacientes', icon: Users, modulo: 'clientes' },
-      { to: '/ficha', label: 'Ficha del paciente', icon: IdCard, modulo: 'ficha' },
-      { to: '/chat', label: 'Chat interno', icon: MessagesSquare, modulo: 'chat' },
-      { to: '/tareas', label: 'Tareas', icon: ListChecks, modulo: 'tareas' },
-      { to: '/avisos', label: 'Avisos', icon: Megaphone, modulo: 'avisos', siempre: true },
-      // Se trabajan desde la ficha del paciente; ocultos del menú para dejarlo más limpio.
-      { to: '/historia', label: 'Historia clínica', icon: HeartPulse, modulo: 'historia', oculto: true },
-      { to: '/imagenes', label: 'Imágenes / Estudios', icon: Image, modulo: 'imagenes', oculto: true },
-      { to: '/recetas', label: 'Recetas', icon: Pill, modulo: 'recetas', oculto: true },
-      { to: '/documentos', label: 'Documentos', icon: FileText, modulo: 'documentos', oculto: true },
-      { to: '/consentimientos', label: 'Consentimientos', icon: PenLine, modulo: 'consentimientos', oculto: true },
-      { to: '/presupuestos', label: 'Presupuestos', icon: FileText, modulo: 'presupuestos', oculto: true },
-      { to: '/seguimiento', label: 'Seguimiento de planes', icon: ClipboardCheck, modulo: 'seguimiento' },
-      { to: '/controles', label: 'Controles / Recall', icon: BellRing, modulo: 'controles' },
-      { to: '/alertas', label: 'Alertas', icon: Bell, modulo: 'alertas' },
-      { to: '/servicios', label: 'Servicios y precios', icon: Stethoscope, modulo: 'servicios' },
+      ['/', 'Dashboard', Home], ['/granjas', 'Granjas', Building2], ['/galpones', 'Galpones', Store],
+      ['/lotes', 'Lotes de gallinas', Bird], ['/produccion', 'Producción diaria', Egg],
+      ['/recoleccion', 'Recolección', ClipboardList], ['/clasificacion', 'Clasificación', Boxes],
+      ['/empaque', 'Empaque', Package],
     ],
   },
   {
-    titulo: 'Facturación y operación',
+    titulo: 'Inventario y sanidad',
     links: [
-      { to: '/facturacion', label: 'Facturación', icon: Receipt, modulo: 'facturacion' },
-      { to: '/caja', label: 'Caja', icon: Wallet, modulo: 'caja' },
-      { to: '/cuentas', label: 'Cuentas por cobrar', icon: HandCoins, modulo: 'cuentas' },
-      { to: '/compras', label: 'Compras', icon: ShoppingCart, modulo: 'compras' },
-      { to: '/por-pagar', label: 'Cuentas por pagar', icon: HandCoins, modulo: 'cuentas_pagar' },
-      { to: '/gastos', label: 'Gastos', icon: Wallet, modulo: 'gastos' },
-      { to: '/nomina', label: 'Pagos a empleados', icon: Users, modulo: 'nomina' },
-      { to: '/contabilidad', label: 'Contabilidad', icon: Calculator, modulo: 'contabilidad' },
-      { to: '/indicadores', label: 'Indicadores', icon: Gauge, modulo: 'indicadores' },
-      { to: '/reportes', label: 'Reportes', icon: FileBarChart, modulo: 'reportes' },
-      { to: '/articulos', label: 'Artículos / Insumos', icon: Package, modulo: 'articulos' },
-      { to: '/mobiliario', label: 'Mobiliario y equipos', icon: Armchair, modulo: 'mobiliario' },
+      ['/inventario-huevos', 'Inventario de huevos', Egg], ['/inventario-alimentos', 'Inventario de alimentos', Wheat],
+      ['/consumo', 'Consumo de alimento', BarChart3], ['/sanidad', 'Sanidad', ShieldCheck],
+      ['/mortalidad', 'Mortalidad', HeartPulse], ['/calidad', 'Calidad', ThermometerSun],
     ],
   },
   {
-    titulo: 'Configuración',
+    titulo: 'Comercial y finanzas',
     links: [
-      { to: '/procesos', label: 'Reglamentos / Procesos', icon: Workflow, modulo: 'procesos' },
-      { to: '/configuracion', label: 'Configuración', icon: Settings, modulo: 'configuracion' },
-      { to: '/empleados', label: 'Empleados', icon: UserCog, modulo: 'empleados' },
+      ['/compras', 'Compras', ShoppingCart], ['/proveedores', 'Proveedores', Truck], ['/clientes', 'Clientes', Users],
+      ['/ventas', 'Ventas', Receipt], ['/cuentas-cobrar', 'Cuentas por cobrar', WalletCards],
+      ['/cuentas-pagar', 'Cuentas por pagar', WalletCards], ['/gastos', 'Gastos', WalletCards],
+      ['/rentabilidad', 'Rentabilidad', TrendingUp],
     ],
   },
-]
+  {
+    titulo: 'Administración',
+    links: [['/reportes', 'Centro de inteligencia', FileBarChart], ['/configuracion', 'Configuración', Settings]],
+  },
+] as const
 
-interface Props {
-  open: boolean
-  onClose: () => void
-}
+interface Props { open: boolean; onClose: () => void }
 
 export default function Sidebar({ open, onClose }: Props) {
-  const { perfil, signOut, puede } = useAuth()
-  const chatNoLeidos = useChatNoLeidos()
-  const visibles = grupos
-    .map((g) => ({ ...g, links: g.links.filter((l) => (l.siempre || puede(l.modulo)) && !l.oculto) }))
-    .filter((g) => g.links.length > 0)
+  const { perfil, signOut } = useAuth()
 
   return (
     <>
-      {open && <div className="fixed inset-0 z-30 bg-slate-900/50 lg:hidden" onClick={onClose} />}
-
-      <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 transform flex-col border-r-2 border-[#3a5c82] bg-[linear-gradient(180deg,rgba(255,255,255,0.16),transparent_24%),linear-gradient(165deg,#6c9ccc,#5484b4_45%,#456f9c)] text-brand-50 shadow-[inset_1px_1px_0_rgba(255,255,255,0.3),inset_-7px_0_18px_-10px_rgba(0,0,0,0.4),10px_0_34px_-12px_rgba(69,111,156,0.5)] transition-transform duration-200 lg:static lg:z-auto lg:translate-x-0 ${
-          open ? 'translate-x-0' : '-translate-x-full'
-        }`}
-      >
-        <div className="relative border-b border-white/25 px-5 py-5">
-          <img
-            src={`${import.meta.env.BASE_URL}logo.png`}
-            alt="Consultorio Dr. Marcos Cepeda"
-            className="mx-auto aspect-square w-24 rounded-2xl bg-white object-contain p-2.5 shadow-[0_8px_18px_-6px_rgba(0,0,0,0.4),inset_0_1px_0_#fff] ring-1 ring-white/70"
-          />
-          <button onClick={onClose} className="absolute right-3 top-3 rounded-lg p-1 text-white/90 hover:bg-white/20 lg:hidden">
-            <X size={22} />
-          </button>
+      {open && <div className="fixed inset-0 z-30 bg-slate-950/45 lg:hidden" onClick={onClose} />}
+      <aside className={`fixed inset-y-0 left-0 z-40 flex w-[270px] transform flex-col bg-[#123A25] text-white shadow-2xl transition-transform duration-200 lg:static lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="flex h-16 items-center gap-3 border-b border-white/10 px-5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#2E7D32] shadow-sm"><Egg size={23} /></div>
+          <div>
+            <p className="text-[17px] font-bold tracking-tight">AVÍCOLA ERP</p>
+            <p className="text-[10px] uppercase tracking-[0.18em] text-emerald-200">Enterprise 2026</p>
+          </div>
+          <button onClick={onClose} className="ml-auto rounded-lg p-1.5 text-white/70 hover:bg-white/10 lg:hidden"><X size={20} /></button>
         </div>
 
-        <nav className="flex-1 space-y-4 overflow-y-auto px-3 py-2">
-          {visibles.map((g) => (
-            <div key={g.titulo}>
-              <p className="px-3 pb-1 text-[10px] font-semibold uppercase tracking-wider text-white/70">{g.titulo}</p>
+        <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+          {grupos.map((grupo) => (
+            <section key={grupo.titulo}>
+              <p className="mb-1.5 px-3 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200/70">{grupo.titulo}</p>
               <div className="space-y-1">
-                {g.links.map(({ to, label, icon: Icon, end, modulo }) => (
-                  <NavLink
-                    key={to}
-                    to={to}
-                    end={end}
-                    onClick={onClose}
-                    className={({ isActive }) =>
-                      `group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all duration-150 ${
-                        isActive
-                          ? 'bg-white text-amber-800 shadow-[0_5px_12px_-3px_rgba(0,0,0,0.45),inset_0_1px_0_#fff] -translate-y-px'
-                          : 'text-amber-50 [text-shadow:0_1px_1px_rgba(28,42,58,0.4)] hover:-translate-y-px hover:bg-white/15 hover:text-white hover:shadow-[0_4px_10px_-4px_rgba(0,0,0,0.35)]'
-                      }`
-                    }
-                  >
-                    {({ isActive }) => (
-                      <>
-                        <Icon size={18} className={isActive ? 'text-amber-600' : 'text-amber-50/90 group-hover:text-white'} />
-                        <span className="flex-1">{label}</span>
-                        {modulo === 'chat' && chatNoLeidos > 0 && (
-                          <span className="shrink-0 rounded-full bg-rose-500 px-1.5 py-0.5 text-[10px] font-bold text-white shadow">
-                            {chatNoLeidos > 99 ? '99+' : chatNoLeidos}
-                          </span>
-                        )}
-                      </>
-                    )}
+                {grupo.links.map(([to, label, Icon]) => (
+                  <NavLink key={to} to={to} end={to === '/'} onClick={onClose} className={({ isActive }) => `flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition ${isActive ? 'bg-white text-[#1F6A34] shadow-sm' : 'text-emerald-50/85 hover:bg-white/10 hover:text-white'}`}>
+                    <Icon size={18} /><span className="flex-1">{label}</span>
                   </NavLink>
                 ))}
               </div>
-            </div>
+            </section>
           ))}
         </nav>
 
-        <div className="space-y-2 border-t border-white/25 px-3 py-4">
-          {perfil?.rol_nombre && (
-            <p className="px-3 text-xs font-semibold text-white">{perfil.rol_nombre}</p>
-          )}
-          {(perfil?.username || perfil?.nombre) && (
-            <p className="truncate px-3 text-xs text-amber-50/80">{perfil?.nombre || perfil?.username}{perfil?.username ? ` · ${perfil.username}` : ''}</p>
-          )}
-          <button
-            onClick={signOut}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-amber-50 transition hover:bg-white/15 hover:text-white"
-          >
-            <LogOut size={18} />
-            Cerrar sesión
-          </button>
+        <div className="border-t border-white/10 p-3">
+          <div className="mb-2 rounded-xl bg-white/7 px-3 py-2.5">
+            <p className="truncate text-xs font-semibold">{perfil?.nombre || perfil?.username || 'Administrador'}</p>
+            <p className="mt-0.5 text-[11px] text-emerald-200/70">Granja Principal</p>
+          </div>
+          <button onClick={signOut} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-emerald-100 transition hover:bg-white/10 hover:text-white"><LogOut size={17} /> Cerrar sesión</button>
         </div>
       </aside>
     </>
