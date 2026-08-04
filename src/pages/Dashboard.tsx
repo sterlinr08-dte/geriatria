@@ -1,129 +1,92 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { CalendarDays, Users, TrendingUp, Clock, HandCoins, PackageX } from 'lucide-react'
-import { supabase } from '../lib/supabase'
-import { CitaConRelaciones } from '../types'
-import { hora, money, hoyISO, fechaLarga } from '../lib/format'
-import { useNegocio } from '../lib/negocio'
-import Cargando from '../components/Cargando'
-import AvisosPanel from '../components/AvisosPanel'
+import { AlertTriangle, ArrowDownRight, ArrowUpRight, Bird, Egg, Package, TrendingUp, Wheat } from 'lucide-react'
 
-interface Stats {
-  clientes: number
-  citasHoy: number
-  ventasHoy: number
-  porCobrar: number
-  stockBajo: number
-}
+const kpis = [
+  { label: 'Gallinas activas', value: '48,620', trend: '+1.8%', positive: true, icon: Bird },
+  { label: 'Producción de hoy', value: '43,286', trend: '+3.4%', positive: true, icon: Egg },
+  { label: 'Porcentaje de postura', value: '89.0%', trend: '+1.2%', positive: true, icon: TrendingUp },
+  { label: 'Consumo de alimento', value: '5,420 kg', trend: '+0.7%', positive: false, icon: Wheat },
+  { label: 'Inventario disponible', value: '126,480', trend: '-2.1%', positive: false, icon: Package },
+]
 
-const SELECT = `*,
-  cliente:clientes(id,nombre,telefono),
-  empleado:empleados(id,nombre,color),
-  servicio:servicios(id,nombre,precio,duracion_min)`
+const produccion = [74, 78, 75, 82, 80, 86, 84, 88, 85, 90, 89, 92, 91, 94, 93, 96, 95, 97, 96, 98, 97, 99, 98, 100]
+const galpones = [
+  ['Galpón A-01', '92.8%', '9,840 huevos'],
+  ['Galpón B-02', '90.4%', '8,970 huevos'],
+  ['Galpón A-03', '88.9%', '8,215 huevos'],
+  ['Galpón C-01', '86.6%', '7,840 huevos'],
+]
 
 export default function Dashboard() {
-  const { negocio } = useNegocio()
-  const [stats, setStats] = useState<Stats>({ clientes: 0, citasHoy: 0, ventasHoy: 0, porCobrar: 0, stockBajo: 0 })
-  const [agenda, setAgenda] = useState<CitaConRelaciones[]>([])
-  const [loading, setLoading] = useState(true)
-  const hoy = hoyISO()
-
-  useEffect(() => {
-    ;(async () => {
-      const [cl, citas, factHoy, pend, arts] = await Promise.all([
-        supabase.from('clientes').select('id', { count: 'exact', head: true }),
-        supabase.from('citas').select(SELECT).eq('fecha', hoy).order('hora_inicio'),
-        supabase.from('facturas').select('total,estado').eq('fecha', hoy),
-        supabase.from('facturas').select('total').eq('estado', 'PENDIENTE'),
-        supabase.from('articulos').select('stock,stock_min').eq('activo', true),
-      ])
-      const lista = (citas.data as CitaConRelaciones[]) ?? []
-      const ventasHoy = (factHoy.data ?? [])
-        .filter((f: any) => f.estado === 'PAGADA')
-        .reduce((s: number, f: any) => s + Number(f.total), 0)
-      const porCobrar = (pend.data ?? []).reduce((s: number, f: any) => s + Number(f.total), 0)
-      const stockBajo = (arts.data ?? []).filter((a: any) => Number(a.stock) <= Number(a.stock_min)).length
-      setStats({
-        clientes: cl.count ?? 0,
-        citasHoy: lista.length,
-        ventasHoy,
-        porCobrar,
-        stockBajo,
-      })
-      setAgenda(lista)
-      setLoading(false)
-    })()
-  }, [hoy])
-
-  const tarjetas = [
-    { label: 'Ventas de hoy', valor: money(stats.ventasHoy), icon: TrendingUp, to: '/caja', color: 'text-emerald-600 bg-emerald-50' },
-    { label: 'Por cobrar', valor: money(stats.porCobrar), icon: HandCoins, to: '/caja', color: 'text-amber-600 bg-amber-50' },
-    { label: 'Citas hoy', valor: stats.citasHoy, icon: CalendarDays, to: '/citas', color: 'text-brand-600 bg-brand-50' },
-    { label: 'Clientes', valor: stats.clientes, icon: Users, to: '/clientes', color: 'text-sky-600 bg-sky-50' },
-    { label: 'Existencia baja', valor: stats.stockBajo, icon: PackageX, to: '/articulos', color: stats.stockBajo > 0 ? 'text-rose-600 bg-rose-50' : 'text-slate-500 bg-slate-100' },
-  ]
-
   return (
-    <div>
-      <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-amber-200 bg-white px-7 py-8 text-slate-800 shadow-[0_18px_42px_-18px_rgba(84,132,180,0.30)]">
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm uppercase tracking-[0.25em] text-amber-600">{negocio.nombre}</p>
-          <h1 className="mt-1 font-display text-3xl font-bold">Bienvenido</h1>
-          <p className="mt-2 text-slate-500">{fechaLarga(hoy)}</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Resumen ejecutivo</p>
+          <h1 className="mt-1 text-3xl font-bold text-slate-950">Dashboard</h1>
+          <p className="mt-2 text-sm text-slate-500">Rendimiento consolidado de Granja Principal · Hoy, 4 de agosto de 2026</p>
         </div>
-        <div className="text-sm text-slate-500">
-          <p> {negocio.direccion}</p>
-          <p> {negocio.whatsapp}</p>
-          <p> {negocio.instagram}</p>
+        <div className="flex gap-2">
+          <button className="btn-ghost">Últimos 30 días</button>
+          <button className="btn-primary">Registrar producción</button>
         </div>
       </div>
 
-      <AvisosPanel />
-
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        {tarjetas.map((t) => (
-          <Link key={t.label} to={t.to} className="card">
-            <div className={`mb-3 inline-flex h-11 w-11 items-center justify-center rounded-xl ring-1 ring-black/5 shadow-[inset_0_1px_0_rgba(255,255,255,0.7),0_8px_16px_-6px_rgba(84,132,180,0.3)] ${t.color}`}>
-              <t.icon size={20} />
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        {kpis.map(({ label, value, trend, positive, icon: Icon }) => (
+          <article key={label} className="card">
+            <div className="flex items-start justify-between">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700"><Icon size={20} /></div>
+              <span className={`inline-flex items-center gap-1 text-xs font-semibold ${positive ? 'text-emerald-700' : 'text-amber-700'}`}>
+                {positive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}{trend}
+              </span>
             </div>
-            <p className="text-2xl font-bold text-slate-800">{loading ? '…' : t.valor}</p>
-            <p className="text-sm text-slate-500">{t.label}</p>
-          </Link>
+            <p className="mt-5 text-2xl font-bold tracking-tight text-slate-950">{value}</p>
+            <p className="mt-1 text-xs font-medium text-slate-500">{label}</p>
+          </article>
         ))}
       </div>
 
-      {stats.stockBajo > 0 && (
-        <Link to="/articulos" className="mb-6 flex items-center gap-3 rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm text-rose-700 ring-1 ring-rose-100 transition hover:bg-rose-100">
-          <PackageX size={20} />
-          <span><strong>{stats.stockBajo}</strong> artículo(s) con existencia baja (en o por debajo de su mínimo). Toca para revisar el inventario.</span>
-        </Link>
-      )}
+      <div className="grid gap-6 xl:grid-cols-[1.65fr_1fr]">
+        <section className="card">
+          <div className="mb-6 flex items-center justify-between">
+            <div><h2 className="text-base font-semibold text-slate-900">Producción de los últimos 30 días</h2><p className="mt-1 text-xs text-slate-500">Huevos recolectados por día</p></div>
+            <span className="badge bg-emerald-50 text-emerald-700 ring-emerald-200">+6.8% vs. período anterior</span>
+          </div>
+          <div className="flex h-64 items-end gap-2 border-b border-l border-slate-200 px-3 pb-3">
+            {produccion.map((valor, i) => <div key={i} title={`${valor}%`} className="flex-1 rounded-t-md bg-emerald-600/85 transition hover:bg-emerald-700" style={{ height: `${valor}%` }} />)}
+          </div>
+          <div className="mt-3 flex justify-between text-[10px] text-slate-400"><span>6 jul</span><span>13 jul</span><span>20 jul</span><span>27 jul</span><span>4 ago</span></div>
+        </section>
 
-      <div className="card">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="font-display text-lg font-bold text-slate-800">Agenda de hoy</h2>
-          <Link to="/citas" className="text-sm font-semibold text-brand-600 hover:underline">Ver todo →</Link>
-        </div>
-        {loading ? (
-          <Cargando />
-        ) : agenda.length === 0 ? (
-          <p className="py-6 text-center text-slate-600">No hay citas agendadas para hoy.</p>
-        ) : (
-          <ul className="divide-y divide-slate-50">
-            {agenda.map((c) => (
-              <li key={c.id} className="flex items-center gap-4 py-3">
-                <span className="flex items-center gap-1 text-sm font-semibold text-brand-600">
-                  <Clock size={14} /> {hora(c.hora_inicio)}
-                </span>
-                <div className="flex-1">
-                  <p className="font-medium text-slate-800">{c.cliente?.nombre ?? 'Cliente'}</p>
-                  <p className="text-xs text-slate-600">{c.servicio?.nombre}</p>
-                </div>
-                <span className="text-sm font-semibold text-slate-700">{money(c.precio)}</span>
-              </li>
+        <section className="card">
+          <div className="mb-5 flex items-center justify-between"><div><h2 className="text-base font-semibold text-slate-900">Producción por galpón</h2><p className="mt-1 text-xs text-slate-500">Ranking de postura de hoy</p></div><button className="text-xs font-semibold text-emerald-700">Ver todos</button></div>
+          <div className="space-y-4">
+            {galpones.map(([nombre, postura, huevos], i) => (
+              <div key={nombre}>
+                <div className="mb-2 flex items-center justify-between text-sm"><span className="font-medium text-slate-800">{i + 1}. {nombre}</span><span className="font-semibold text-slate-900">{postura}</span></div>
+                <div className="h-2 rounded-full bg-slate-100"><div className="h-2 rounded-full bg-emerald-600" style={{ width: postura }} /></div>
+                <p className="mt-1.5 text-[11px] text-slate-500">{huevos}</p>
+              </div>
             ))}
-          </ul>
-        )}
+          </div>
+        </section>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <section className="card lg:col-span-2">
+          <div className="mb-4 flex items-center justify-between"><h2 className="text-base font-semibold text-slate-900">Indicadores operativos</h2><span className="text-xs text-slate-400">Actualizado hace 8 min</span></div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {[['Huevos buenos','41,974','97.0%'],['Huevos rotos','562','1.3%'],['Huevos sucios','481','1.1%'],['Descartados','269','0.6%']].map(([l,v,p]) => <div key={l} className="rounded-xl border border-slate-200 bg-slate-50 p-4"><p className="text-xs text-slate-500">{l}</p><p className="mt-2 text-xl font-bold text-slate-900">{v}</p><p className="mt-1 text-xs font-semibold text-emerald-700">{p}</p></div>)}
+          </div>
+        </section>
+        <section className="card border-amber-200 bg-amber-50/60">
+          <div className="flex items-start gap-3"><div className="rounded-xl bg-amber-100 p-2 text-amber-700"><AlertTriangle size={20} /></div><div><h2 className="font-semibold text-slate-900">Alertas prioritarias</h2><p className="mt-1 text-xs text-slate-500">3 requieren atención</p></div></div>
+          <div className="mt-4 space-y-3 text-sm">
+            <p className="rounded-lg bg-white/80 p-3 text-slate-700"><strong>Galpón C-01:</strong> postura 4.2% por debajo del promedio.</p>
+            <p className="rounded-lg bg-white/80 p-3 text-slate-700"><strong>Alimento postura:</strong> disponibilidad estimada para 6 días.</p>
+            <p className="rounded-lg bg-white/80 p-3 text-slate-700"><strong>Lote L-2403:</strong> vacuna programada para mañana.</p>
+          </div>
+        </section>
       </div>
     </div>
   )
