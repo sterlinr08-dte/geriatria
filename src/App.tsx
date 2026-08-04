@@ -8,32 +8,7 @@ import Dashboard from './pages/Dashboard'
 import ModuloAvicola from './pages/ModuloAvicola'
 import { useAuth } from './lib/auth'
 import { MODULOS } from './lib/permisos'
-
-const modulos = [
-  ['/granjas', 'granjas', 'Granjas', 'Administración de granjas, ubicaciones, capacidad, responsables y rendimiento.'],
-  ['/galpones', 'galpones', 'Galpones', 'Control operativo y ambiental de cada galpón de producción.'],
-  ['/lotes', 'lotes', 'Lotes de gallinas', 'Trazabilidad de lotes, edad, raza, mortalidad, postura y rentabilidad.'],
-  ['/produccion', 'produccion', 'Producción diaria', 'Registro y análisis diario de postura, merma y huevos comercializables.'],
-  ['/recoleccion', 'recoleccion', 'Recolección', 'Recorridos, responsables, tiempos y rendimiento por sector.'],
-  ['/clasificacion', 'clasificacion', 'Clasificación', 'Clasificación por tamaño, calidad y condición comercial.'],
-  ['/empaque', 'empaque', 'Empaque', 'Control de bandejas, cajas, etiquetas, materiales y productividad.'],
-  ['/inventario-huevos', 'inventario_huevos', 'Inventario de huevos', 'Existencias por lote, fecha, clasificación, presentación y método FEFO.'],
-  ['/inventario-alimentos', 'inventario_alimentos', 'Inventario de alimentos', 'Entradas, salidas, costos, proveedores y días disponibles.'],
-  ['/consumo', 'consumo', 'Consumo de alimento', 'Consumo por ave, lote y galpón con análisis de costo y desviaciones.'],
-  ['/sanidad', 'sanidad', 'Sanidad', 'Vacunas, tratamientos, medicamentos, veterinarios y calendario sanitario.'],
-  ['/mortalidad', 'mortalidad', 'Mortalidad', 'Registro de bajas, causas, evidencia, indicadores y mapa de calor.'],
-  ['/calidad', 'calidad', 'Calidad', 'Control de fisuras, deformaciones, rechazos, causas y tendencias.'],
-  ['/compras', 'compras', 'Compras', 'Órdenes, facturas, alimentos, medicamentos, equipos y repuestos.'],
-  ['/proveedores', 'proveedores', 'Proveedores', 'Historial comercial, pagos, balance, evaluación y cumplimiento.'],
-  ['/clientes', 'clientes', 'Clientes', 'Crédito, pedidos, ventas, historial, saldo y comportamiento comercial.'],
-  ['/ventas', 'ventas', 'Ventas', 'Pedidos, facturación, métodos de pago, clientes y análisis comercial.'],
-  ['/cuentas-cobrar', 'cuentas_cobrar', 'Cuentas por cobrar', 'Facturas pendientes, vencimientos, cobros y recordatorios.'],
-  ['/cuentas-pagar', 'cuentas_pagar', 'Cuentas por pagar', 'Compromisos con proveedores, pagos y vencimientos.'],
-  ['/gastos', 'gastos', 'Gastos', 'Electricidad, agua, nómina, combustible, mantenimiento y otros costos.'],
-  ['/rentabilidad', 'rentabilidad', 'Rentabilidad', 'Costo por huevo, lote y galpón, utilidad, margen y retorno.'],
-  ['/reportes', 'reportes', 'Centro de inteligencia', 'Reportes operativos, financieros y sanitarios para toma de decisiones.'],
-  ['/configuracion', 'configuracion', 'Configuración', 'Usuarios, roles, permisos, empresas, sucursales e integraciones.'],
-] as const
+import { AVICOLA_MODULES } from './core/modules'
 
 function Protegido({ modulo, children }: { modulo: string; children: ReactElement }) {
   const { puede, permisos } = useAuth()
@@ -62,6 +37,9 @@ export default function App() {
   if (loading) return <div className="flex h-full items-center justify-center"><Cargando texto="Cargando AVÍCOLA ERP…" /></div>
   if (!session) return <Login />
 
+  const dashboard = AVICOLA_MODULES.find((module) => module.key === 'panel')
+  const moduleRoutes = AVICOLA_MODULES.filter((module) => module.key !== 'panel')
+
   return (
     <div className="flex h-full bg-[#F6F7F9]">
       <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -84,8 +62,10 @@ export default function App() {
         <main className="flex-1 overflow-y-auto">
           <div className="contenido-principal mx-auto max-w-[1720px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
             <Routes>
-              <Route path="/" element={<Protegido modulo="panel"><Dashboard /></Protegido>} />
-              {modulos.map(([path, permiso, titulo, descripcion]) => <Route key={path} path={path} element={<Protegido modulo={permiso}><ModuloAvicola titulo={titulo} descripcion={descripcion} /></Protegido>} />)}
+              {dashboard && <Route path={dashboard.path} element={<Protegido modulo={dashboard.key}><Dashboard /></Protegido>} />}
+              {moduleRoutes.map((module) => (
+                <Route key={module.path} path={module.path} element={<Protegido modulo={module.key}><ModuloAvicola titulo={module.label} descripcion={module.description} /></Protegido>} />
+              ))}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
