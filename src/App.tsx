@@ -1,163 +1,106 @@
-import { useState, useEffect, ReactElement } from 'react'
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom'
-import { Menu } from 'lucide-react'
+import { useState } from 'react'
+import { Navigate, Route, Routes } from 'react-router-dom'
+import { Bell, ChevronDown, Menu, Search, Settings2 } from 'lucide-react'
 import Sidebar from './components/Sidebar'
-import Dashboard from './pages/Dashboard'
-import Citas from './pages/Citas'
-import Clientes from './pages/Clientes'
-import FichaPaciente from './pages/FichaPaciente'
-import HistoriaClinica from './pages/HistoriaClinica'
-import Presupuestos from './pages/Presupuestos'
-import ImagenesPaciente from './pages/ImagenesPaciente'
-import Recetas from './pages/Recetas'
-import Consentimientos from './pages/Consentimientos'
-import Documentos from './pages/Documentos'
-import Alertas from './pages/Alertas'
-import Seguimiento from './pages/Seguimiento'
-import Controles from './pages/Controles'
-import Servicios from './pages/Servicios'
-import Articulos from './pages/Articulos'
-import Mobiliario from './pages/Mobiliario'
-import Empleados from './pages/Empleados'
-import Facturacion from './pages/Facturacion'
-import Caja from './pages/Caja'
-import CuentasPorCobrar from './pages/CuentasPorCobrar'
-import Compras from './pages/Compras'
-import CuentasPorPagar from './pages/CuentasPorPagar'
-import Gastos from './pages/Gastos'
-import Nomina from './pages/Nomina'
-import Contabilidad from './pages/Contabilidad'
-import Reportes from './pages/Reportes'
-import Indicadores from './pages/Indicadores'
-import Chat from './pages/Chat'
-import Tareas from './pages/Tareas'
-import Avisos from './pages/Avisos'
-import Procesos from './pages/Procesos'
-import Configuracion from './pages/Configuracion'
-import Login from './pages/Login'
 import Cargando from './components/Cargando'
-import CampanaNotificaciones from './components/CampanaNotificaciones'
-import ChatDrawer from './components/chat/ChatDrawer'
-import { BurbujaChat, IconoChatHeader } from './components/chat/BotonChat'
+import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+import ModuloAvicola from './pages/ModuloAvicola'
 import { useAuth } from './lib/auth'
-import { useAjustesChat } from './lib/ajustesChat'
-import { MODULOS } from './lib/permisos'
 
-function Protegido({ modulo, children }: { modulo: string; children: ReactElement }) {
-  const { puede, permisos } = useAuth()
-  if (puede(modulo)) return children
-  const primero = MODULOS.find((m) => permisos.includes(m.key))
-  if (primero && primero.key !== modulo) return <Navigate to={primero.path} replace />
-  return (
-    <div className="card text-center text-slate-500">
-      No tienes acceso a este módulo. Contacta al administrador.
-    </div>
-  )
-}
+const modulos = [
+  ['/granjas', 'Granjas', 'Administración de granjas, ubicaciones, capacidad, responsables y rendimiento.'],
+  ['/galpones', 'Galpones', 'Control operativo y ambiental de cada galpón de producción.'],
+  ['/lotes', 'Lotes de gallinas', 'Trazabilidad de lotes, edad, raza, mortalidad, postura y rentabilidad.'],
+  ['/produccion', 'Producción diaria', 'Registro y análisis diario de postura, merma y huevos comercializables.'],
+  ['/recoleccion', 'Recolección', 'Recorridos, responsables, tiempos y rendimiento por sector.'],
+  ['/clasificacion', 'Clasificación', 'Clasificación por tamaño, calidad y condición comercial.'],
+  ['/empaque', 'Empaque', 'Control de bandejas, cajas, etiquetas, materiales y productividad.'],
+  ['/inventario-huevos', 'Inventario de huevos', 'Existencias por lote, fecha, clasificación, presentación y método FEFO.'],
+  ['/inventario-alimentos', 'Inventario de alimentos', 'Entradas, salidas, costos, proveedores y días disponibles.'],
+  ['/consumo', 'Consumo de alimento', 'Consumo por ave, lote y galpón con análisis de costo y desviaciones.'],
+  ['/sanidad', 'Sanidad', 'Vacunas, tratamientos, medicamentos, veterinarios y calendario sanitario.'],
+  ['/mortalidad', 'Mortalidad', 'Registro de bajas, causas, evidencia, indicadores y mapa de calor.'],
+  ['/calidad', 'Calidad', 'Control de fisuras, deformaciones, rechazos, causas y tendencias.'],
+  ['/compras', 'Compras', 'Órdenes, facturas, alimentos, medicamentos, equipos y repuestos.'],
+  ['/proveedores', 'Proveedores', 'Historial comercial, pagos, balance, evaluación y cumplimiento.'],
+  ['/clientes', 'Clientes', 'Crédito, pedidos, ventas, historial, saldo y comportamiento comercial.'],
+  ['/ventas', 'Ventas', 'Pedidos, facturación, métodos de pago, clientes y análisis comercial.'],
+  ['/cuentas-cobrar', 'Cuentas por cobrar', 'Facturas pendientes, vencimientos, cobros y recordatorios.'],
+  ['/cuentas-pagar', 'Cuentas por pagar', 'Compromisos con proveedores, pagos y vencimientos.'],
+  ['/gastos', 'Gastos', 'Electricidad, agua, nómina, combustible, mantenimiento y otros costos.'],
+  ['/rentabilidad', 'Rentabilidad', 'Costo por huevo, lote y galpón, utilidad, margen y retorno.'],
+  ['/reportes', 'Centro de inteligencia', 'Reportes operativos, financieros y sanitarios para toma de decisiones.'],
+  ['/configuracion', 'Configuración', 'Usuarios, roles, permisos, empresas, sucursales e integraciones.'],
+] as const
 
 export default function App() {
-  const { session, loading, puede } = useAuth()
+  const { session, loading, perfil } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
-  const [chatOpen, setChatOpen] = useState(false)
-  const location = useLocation()
-  const ajustesChat = useAjustesChat()
+  const [searchOpen, setSearchOpen] = useState(false)
 
-  // El acceso rápido (burbuja + ícono) aparece si el usuario tiene el chat,
-  // y se oculta en la propia página del chat.
-  const accesoChat = puede('chat') && !location.pathname.startsWith('/chat')
-  // Al navegar a otra pantalla, cerrar el panel deslizante.
-  useEffect(() => { setChatOpen(false) }, [location.pathname])
-
-  // Al enfocar un campo numérico, seleccionar su contenido para que el "0"
-  // se reemplace al escribir (evita tener que borrarlo manualmente).
-  useEffect(() => {
-    const onFocus = (e: FocusEvent) => {
-      const t = e.target as HTMLInputElement
-      if (t instanceof HTMLInputElement && t.type === 'number') {
-        requestAnimationFrame(() => t.select())
-      }
-    }
-    document.addEventListener('focusin', onFocus)
-    return () => document.removeEventListener('focusin', onFocus)
-  }, [])
-
-  if (loading) {
-    return <div className="flex h-full items-center justify-center"><Cargando texto="Cargando…" /></div>
-  }
-
-  if (!session) {
-    // Sin sesión se muestra el login propio del consultorio. El SSO de NEXUS
-    // (flujo implícito con #access_token) sigue funcionando: cuando llega con
-    // sesión en el hash, Supabase la toma y no se ve esta pantalla.
-    return <Login />
-  }
+  if (loading) return <div className="flex h-full items-center justify-center"><Cargando texto="Cargando AVÍCOLA ERP…" /></div>
+  if (!session) return <Login />
 
   return (
-    <div className="flex h-full">
+    <div className="flex h-full bg-[#F6F7F9]">
       <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="relative z-10 flex items-center gap-3 border-b-2 border-[#3a5c82] bg-[linear-gradient(180deg,rgba(255,255,255,0.28),transparent_55%),linear-gradient(180deg,#6c9ccc,#5484b4_58%,#456f9c)] px-4 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_8px_18px_-6px_rgba(69,111,156,0.55)]">
-          <button onClick={() => setMenuOpen(true)} className="rounded-lg p-1.5 text-white hover:bg-white/20 lg:hidden" aria-label="Abrir menú">
-            <Menu size={24} />
+        <header className="z-20 flex h-16 items-center gap-3 border-b border-slate-200 bg-white px-4 lg:px-6">
+          <button onClick={() => setMenuOpen(true)} className="rounded-lg p-2 text-slate-600 hover:bg-slate-100 lg:hidden" aria-label="Abrir menú">
+            <Menu size={21} />
           </button>
-          <img
-            src={`${import.meta.env.BASE_URL}logo.png`}
-            alt="Consultorio Dr. Marcos Cepeda"
-            className="h-9 w-9 rounded-lg bg-white object-contain p-0.5 shadow-[0_4px_10px_-3px_rgba(0,0,0,0.4),inset_0_1px_0_#fff] ring-1 ring-white/60"
-          />
-          <span className="text-lg font-semibold tracking-wide text-white [text-shadow:0_1px_2px_rgba(28,42,58,0.45)]">Consultorio Dr. Marcos Cepeda</span>
-          <div className="ml-auto flex items-center gap-1">
-            {accesoChat && <IconoChatHeader onClick={() => setChatOpen((v) => !v)} />}
-            <CampanaNotificaciones />
+
+          <button onClick={() => setSearchOpen(true)} className="hidden min-w-[280px] items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500 transition hover:border-emerald-300 hover:bg-white md:flex">
+            <Search size={17} />
+            <span className="flex-1 text-left">Buscar en AVÍCOLA ERP</span>
+            <kbd className="rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px]">⌘ K</kbd>
+          </button>
+
+          <div className="ml-auto flex items-center gap-2">
+            <button className="hidden items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 sm:flex">
+              Granja Principal <ChevronDown size={15} />
+            </button>
+            <button className="rounded-xl p-2.5 text-slate-500 hover:bg-slate-100" aria-label="Configuración rápida"><Settings2 size={19} /></button>
+            <button className="relative rounded-xl p-2.5 text-slate-500 hover:bg-slate-100" aria-label="Notificaciones">
+              <Bell size={19} /><span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
+            </button>
+            <div className="ml-1 flex items-center gap-2 border-l border-slate-200 pl-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-700 text-sm font-bold text-white">AE</div>
+              <div className="hidden leading-tight lg:block">
+                <p className="text-sm font-semibold text-slate-900">{perfil?.nombre || perfil?.username || 'Administrador'}</p>
+                <p className="text-xs text-slate-500">Administrador</p>
+              </div>
+            </div>
           </div>
         </header>
 
         <main className="flex-1 overflow-y-auto">
-          <div className="contenido-principal mx-auto max-w-[1600px] px-4 py-6 sm:px-6 sm:py-8">
+          <div className="contenido-principal mx-auto max-w-[1720px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
             <Routes>
-              <Route path="/" element={<Protegido modulo="panel"><Dashboard /></Protegido>} />
-              <Route path="/citas" element={<Protegido modulo="citas"><Citas /></Protegido>} />
-              <Route path="/clientes" element={<Protegido modulo="clientes"><Clientes /></Protegido>} />
-              <Route path="/ficha" element={<Protegido modulo="ficha"><FichaPaciente /></Protegido>} />
-              <Route path="/ficha/:id" element={<Protegido modulo="ficha"><FichaPaciente /></Protegido>} />
-              <Route path="/historia" element={<Protegido modulo="historia"><HistoriaClinica /></Protegido>} />
-              <Route path="/presupuestos" element={<Protegido modulo="presupuestos"><Presupuestos /></Protegido>} />
-              <Route path="/imagenes" element={<Protegido modulo="imagenes"><ImagenesPaciente /></Protegido>} />
-              <Route path="/recetas" element={<Protegido modulo="recetas"><Recetas /></Protegido>} />
-              <Route path="/consentimientos" element={<Protegido modulo="consentimientos"><Consentimientos /></Protegido>} />
-              <Route path="/documentos" element={<Protegido modulo="documentos"><Documentos /></Protegido>} />
-              <Route path="/alertas" element={<Protegido modulo="alertas"><Alertas /></Protegido>} />
-              <Route path="/seguimiento" element={<Protegido modulo="seguimiento"><Seguimiento /></Protegido>} />
-              <Route path="/controles" element={<Protegido modulo="controles"><Controles /></Protegido>} />
-              <Route path="/servicios" element={<Protegido modulo="servicios"><Servicios /></Protegido>} />
-              <Route path="/articulos" element={<Protegido modulo="articulos"><Articulos /></Protegido>} />
-              <Route path="/mobiliario" element={<Protegido modulo="mobiliario"><Mobiliario /></Protegido>} />
-              <Route path="/empleados" element={<Protegido modulo="empleados"><Empleados /></Protegido>} />
-              <Route path="/facturacion" element={<Protegido modulo="facturacion"><Facturacion /></Protegido>} />
-              <Route path="/caja" element={<Protegido modulo="caja"><Caja /></Protegido>} />
-              <Route path="/cuentas" element={<Protegido modulo="cuentas"><CuentasPorCobrar /></Protegido>} />
-              <Route path="/compras" element={<Protegido modulo="compras"><Compras /></Protegido>} />
-              <Route path="/por-pagar" element={<Protegido modulo="cuentas_pagar"><CuentasPorPagar /></Protegido>} />
-              <Route path="/gastos" element={<Protegido modulo="gastos"><Gastos /></Protegido>} />
-              <Route path="/nomina" element={<Protegido modulo="nomina"><Nomina /></Protegido>} />
-              <Route path="/contabilidad" element={<Protegido modulo="contabilidad"><Contabilidad /></Protegido>} />
-              <Route path="/reportes" element={<Protegido modulo="reportes"><Reportes /></Protegido>} />
-              <Route path="/indicadores" element={<Protegido modulo="indicadores"><Indicadores /></Protegido>} />
-              <Route path="/chat" element={<Protegido modulo="chat"><Chat /></Protegido>} />
-              <Route path="/tareas" element={<Protegido modulo="tareas"><Tareas /></Protegido>} />
-              {/* Avisos: visibles para todo el personal (no se restringe por módulo) */}
-              <Route path="/avisos" element={<Avisos />} />
-              <Route path="/procesos" element={<Protegido modulo="procesos"><Procesos /></Protegido>} />
-              <Route path="/configuracion" element={<Protegido modulo="configuracion"><Configuracion /></Protegido>} />
+              <Route path="/" element={<Dashboard />} />
+              {modulos.map(([path, titulo, descripcion]) => (
+                <Route key={path} path={path} element={<ModuloAvicola titulo={titulo} descripcion={descripcion} />} />
+              ))}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
         </main>
       </div>
 
-      {/* Acceso rápido al chat desde cualquier pantalla */}
-      {accesoChat && ajustesChat.burbuja && <BurbujaChat onClick={() => setChatOpen((v) => !v)} />}
-      <ChatDrawer open={chatOpen} onClose={() => setChatOpen(false)} />
+      {searchOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/35 p-4 backdrop-blur-sm" onClick={() => setSearchOpen(false)}>
+          <div className="mx-auto mt-[10vh] max-w-2xl rounded-2xl bg-white p-3 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-3 border-b border-slate-100 px-3 pb-3">
+              <Search size={20} className="text-emerald-700" />
+              <input autoFocus className="w-full bg-transparent py-2 text-base outline-none" placeholder="Buscar granjas, lotes, clientes, facturas…" />
+              <button onClick={() => setSearchOpen(false)} className="rounded-lg border border-slate-200 px-2 py-1 text-xs text-slate-500">ESC</button>
+            </div>
+            <p className="px-3 py-8 text-center text-sm text-slate-500">El buscador global se conectará a los módulos y datos de Supabase durante esta fase.</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
