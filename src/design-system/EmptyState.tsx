@@ -1,10 +1,11 @@
+import type { ReactNode } from 'react'
 import type { LucideIcon } from 'lucide-react'
 
 interface Props {
   icon: LucideIcon
   title: string
   description: string
-  footer?: React.ReactNode
+  footer?: ReactNode
 }
 
 export default function EmptyState({ icon: Icon, title, description, footer }: Props) {
