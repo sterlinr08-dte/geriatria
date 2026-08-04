@@ -1,5 +1,5 @@
-// Indicador de carga: logo con pulso, aro azul que se expande (radar) y
-// tres puntos verdes en onda.
+import { Egg } from 'lucide-react'
+
 interface Props {
   texto?: string
   className?: string
@@ -9,29 +9,20 @@ export default function Cargando({ texto = 'Cargando…', className = '' }: Prop
   return (
     <div className={`flex flex-col items-center justify-center gap-4 py-12 ${className}`}>
       <div className="relative flex h-20 w-20 items-center justify-center">
-        {/* Aros azules que se expanden (efecto radar) */}
-        <span className="absolute h-16 w-16 rounded-full bg-amber-300/25 animate-ping" style={{ animationDuration: '1.5s' }} />
-        <span className="absolute h-20 w-20 rounded-full bg-amber-200/20 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.4s' }} />
-        {/* Logo con pulso suave */}
-        <img
-          src={`${import.meta.env.BASE_URL}logo.png`}
-          alt="Cargando"
-          className="animate-carga-pulse relative h-14 w-14 rounded-full bg-white object-contain p-1 shadow-[0_6px_18px_-4px_rgba(69,111,156,0.5)] ring-1 ring-amber-100"
-        />
+        <span className="absolute h-16 w-16 animate-ping rounded-full bg-emerald-300/25" style={{ animationDuration: '1.5s' }} />
+        <span className="absolute h-20 w-20 animate-ping rounded-full bg-amber-200/20" style={{ animationDuration: '1.5s', animationDelay: '0.4s' }} />
+        <div className="animate-carga-pulse relative flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-700 text-white shadow-[0_8px_22px_-8px_rgba(46,125,50,0.55)] ring-1 ring-emerald-800/10">
+          <Egg size={28} aria-hidden="true" />
+        </div>
       </div>
 
-      {/* Puntos en onda */}
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5" aria-hidden="true">
         {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="animate-carga-dot h-2.5 w-2.5 rounded-full bg-gradient-to-b from-verde-300 to-verde-500"
-            style={{ animationDelay: `${i * 0.16}s` }}
-          />
+          <span key={i} className="animate-carga-dot h-2.5 w-2.5 rounded-full bg-emerald-600" style={{ animationDelay: `${i * 0.16}s` }} />
         ))}
       </div>
 
-      {texto && <p className="text-sm font-medium text-slate-500">{texto}</p>}
+      {texto && <p className="text-sm font-medium text-slate-500" aria-live="polite">{texto}</p>}
     </div>
   )
 }
