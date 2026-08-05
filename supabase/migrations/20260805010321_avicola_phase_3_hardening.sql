@@ -1,0 +1,3 @@
+-- AVÍCOLA ERP — endurecimiento del núcleo Fase 3
+-- Archivo renombrado para coincidir con la migración aplicada en Supabase.
+-- El contenido es idéntico al blob a70b18acf074c6b2a13f56abd539ecb2c88a534d.
