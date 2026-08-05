@@ -10,6 +10,7 @@ import Galpones from './pages/Galpones'
 import Lotes from './pages/Lotes'
 import ProduccionDiaria from './pages/ProduccionDiaria'
 import Recoleccion from './pages/Recoleccion'
+import DesignSystemPreview from './pages/DesignSystemPreview'
 import ModuloAvicola from './pages/ModuloAvicola'
 import { useAuth } from './lib/auth'
 import { useEmpresa } from './lib/empresa'
@@ -67,6 +68,7 @@ export default function App() {
           <Route path="/lotes" element={<Protegido modulo="lotes"><Lotes /></Protegido>} />
           <Route path="/produccion" element={<Protegido modulo="produccion"><ProduccionDiaria /></Protegido>} />
           <Route path="/recoleccion" element={<Protegido modulo="recoleccion"><Recoleccion /></Protegido>} />
+          <Route path="/design-system" element={<Protegido modulo="configuracion"><DesignSystemPreview /></Protegido>} />
           {moduleRoutes.map((module) => <Route key={module.path} path={module.path} element={<Protegido modulo={module.key}><ModuloAvicola titulo={module.label} descripcion={module.description} /></Protegido>} />)}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
