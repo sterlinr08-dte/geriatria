@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import type { FormEvent } from 'react'
 import { Building2, MapPin, Plus, RefreshCw, Search, X } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useEmpresa } from '../lib/empresa'
@@ -60,7 +61,7 @@ export default function Granjas() {
     return granjas.filter((granja) => [granja.codigo, granja.nombre, granja.municipio, granja.provincia].some((valor) => valor?.toLowerCase().includes(q)))
   }, [granjas, search])
 
-  const crear = async (event: React.FormEvent) => {
+  const crear = async (event: FormEvent) => {
     event.preventDefault()
     if (!empresaActiva) return
     setSaving(true)
@@ -88,7 +89,7 @@ export default function Granjas() {
       <PageHeader
         title="Granjas"
         description="Administra las unidades productivas de la empresa activa."
-        action={<button className="btn-primary inline-flex items-center gap-2" onClick={() => setModalOpen(true)}><Plus size={16} /> Nueva granja</button>}
+        actions={<button className="btn-primary inline-flex items-center gap-2" onClick={() => setModalOpen(true)}><Plus size={16} /> Nueva granja</button>}
       />
 
       <div className="card flex flex-col gap-3 sm:flex-row sm:items-center">
