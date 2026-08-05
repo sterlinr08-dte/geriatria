@@ -85,7 +85,7 @@ create table if not exists public.galpones (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   deleted_at timestamptz,
-  unique (empresa_id, granja_id, codigo)
+  unique (granja_id, codigo)
 );
 
 create table if not exists public.razas (
@@ -172,4 +172,4 @@ alter table public.lotes enable row level security;
 alter table public.produccion_diaria enable row level security;
 
 -- Las políticas iniciales se endurecen y sustituyen en la migración
--- 20260805010000_avicola_phase_3_hardening.sql.
+-- 20260805010321_avicola_phase_3_hardening.sql.
