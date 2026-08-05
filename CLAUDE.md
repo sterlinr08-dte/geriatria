@@ -37,11 +37,12 @@
    - Definir el **esquema de datos real** de AVÍCOLA (granjas, galpones, lotes, producción,
      sanidad, inventario, ventas…) — hoy Fases 1-2 son solo interfaz, sin ninguna tabla ni CRUD
      conectado a Supabase todavía.
-   - Actualizar o dar de baja el registro SSO en la base madre NEXUS PRO (`organizaciones`,
-     `slug='geriatra'`) — quedó apuntando a un sistema clínico que ya no existe (detalle abajo).
-   - Renombrar el proyecto Supabase en el dashboard (sigue mostrando "Consultorio Geriatra"; no
-     hay forma de hacerlo por API/MCP, es un paso manual del dueño).
-   - Decidir si el repo de GitHub se renombra (`geriatria` → algo como `avicola-erp`).
+   - ✅ **SSO desactivado** (2026-08-05): `organizaciones.slug='geriatra'` → `activo=false` en la
+     base madre NEXUS PRO. El registro no se borró (reversible), solo dejó de enrutar el login.
+   - ⏳ **Renombrar el proyecto Supabase** en el dashboard (sigue mostrando "Consultorio
+     Geriatra"; sin API/MCP para esto — paso manual del dueño, ver guía abajo).
+   - ⏳ **Renombrar el repo de GitHub** (`geriatria` → algo como `avicola-erp`; sin API/MCP para
+     esto tampoco — paso manual del dueño, ver guía abajo).
 
 ## Qué es este proyecto
 
@@ -92,13 +93,23 @@ conexión real).
 - `.env.example` ya documenta que el proyecto es exclusivo de AVÍCOLA (advierte no reusar
   credenciales de otros clientes en producción), pero la URL/anon key siguen siendo las de
   `xqcrpsqhjznltthnfysw` desde que se decidió reusar el proyecto en vez de crear uno nuevo.
-- ⚠️ **Pendiente — SSO desactualizado:** en la base madre NEXUS PRO (`tnwsgcxurfyuszxsewsn`,
-  tabla `organizaciones`, fila `slug='geriatra'`, dominio `geriatra.nexusprord.com`) sigue
-  apuntando a este mismo proyecto bajo la identidad vieja del consultorio. Falta decidir si se
-  actualiza a AVÍCOLA, se desactiva, o se reemplaza por un registro nuevo.
+- ✅ **SSO desactivado (2026-08-05):** en la base madre NEXUS PRO (`tnwsgcxurfyuszxsewsn`, tabla
+  `organizaciones`, fila `slug='geriatra'`) se puso `activo=false`. El registro **no se borró**
+  (reversible), pero ya no enruta el login de `nexusprord.com` a este proyecto. Sigue con
+  `dominio='geriatra.nexusprord.com'` y `auth_url`/`auth_key` viejos por si se reactiva.
 - El usuario `doctor@geriatra.local` (rol admin) sigue existiendo en `auth.users`/`perfiles`/
   `roles` — no se tocó; sirve como cuenta admin de arranque si se reusa para AVÍCOLA, o se puede
   reemplazar/borrar cuando se defina el modelo de usuarios real.
+
+## Pasos manuales pendientes (el dueño, sin API/MCP disponible)
+
+- **Renombrar el proyecto Supabase:** panel de Supabase → proyecto `xqcrpsqhjznltthnfysw` →
+  **Settings → General → Project name** → cambiar de "Consultorio Geriatra" a algo como
+  "AVÍCOLA ERP". Cosmético, no rompe nada (la `ref`/URL/keys no cambian).
+- **Renombrar el repo de GitHub:** `github.com/sterlinr08-dte/geriatria` → **Settings → repository
+  name** → cambiar a algo como `avicola-erp`. GitHub deja redirects automáticos del nombre viejo,
+  pero conviene avisar si hay CI/Cloudflare apuntando al nombre actual del repo antes de cambiarlo
+  (revisar que el deploy de Cloudflare Workers no dependa del nombre exacto del repo).
 
 ## Comandos
 
