@@ -7,6 +7,7 @@ import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Granjas from './pages/Granjas'
 import Galpones from './pages/Galpones'
+import Lotes from './pages/Lotes'
 import ModuloAvicola from './pages/ModuloAvicola'
 import { useAuth } from './lib/auth'
 import { useEmpresa } from './lib/empresa'
@@ -42,7 +43,7 @@ export default function App() {
   if (!session) return <Login />
 
   const dashboard = AVICOLA_MODULES.find((module) => module.key === 'panel')
-  const moduleRoutes = AVICOLA_MODULES.filter((module) => !['panel', 'granjas', 'galpones'].includes(module.key))
+  const moduleRoutes = AVICOLA_MODULES.filter((module) => !['panel', 'granjas', 'galpones', 'lotes'].includes(module.key))
 
   return (
     <div className="flex h-full bg-[#F6F7F9]">
@@ -56,12 +57,7 @@ export default function App() {
           <div className="ml-auto flex items-center gap-2">
             <label className="relative hidden sm:block">
               <span className="sr-only">Empresa activa</span>
-              <select
-                className="appearance-none rounded-xl border border-slate-200 bg-white py-2 pl-3 pr-9 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                value={empresaActiva?.id || ''}
-                onChange={(event) => setEmpresaActivaId(event.target.value)}
-                disabled={empresas.length === 0}
-              >
+              <select className="appearance-none rounded-xl border border-slate-200 bg-white py-2 pl-3 pr-9 text-sm font-medium text-slate-700 hover:bg-slate-50" value={empresaActiva?.id || ''} onChange={(event) => setEmpresaActivaId(event.target.value)} disabled={empresas.length === 0}>
                 {empresas.length === 0 && <option value="">Sin empresa</option>}
                 {empresas.map((empresa) => <option key={empresa.id} value={empresa.id}>{empresa.nombre}</option>)}
               </select>
@@ -82,27 +78,20 @@ export default function App() {
               {dashboard && <Route path={dashboard.path} element={<Protegido modulo={dashboard.key}><Dashboard /></Protegido>} />}
               <Route path="/granjas" element={<Protegido modulo="granjas"><Granjas /></Protegido>} />
               <Route path="/galpones" element={<Protegido modulo="galpones"><Galpones /></Protegido>} />
-              {moduleRoutes.map((module) => (
-                <Route key={module.path} path={module.path} element={<Protegido modulo={module.key}><ModuloAvicola titulo={module.label} descripcion={module.description} /></Protegido>} />
-              ))}
+              <Route path="/lotes" element={<Protegido modulo="lotes"><Lotes /></Protegido>} />
+              {moduleRoutes.map((module) => <Route key={module.path} path={module.path} element={<Protegido modulo={module.key}><ModuloAvicola titulo={module.label} descripcion={module.description} /></Protegido>} />)}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </div>
         </main>
       </div>
-      {searchOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/35 p-4 backdrop-blur-sm" onClick={() => setSearchOpen(false)}>
-          <div role="dialog" aria-modal="true" aria-labelledby="buscador-global-titulo" className="mx-auto mt-[10vh] max-w-2xl rounded-2xl bg-white p-3 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-            <h2 id="buscador-global-titulo" className="sr-only">Buscador global</h2>
-            <div className="flex items-center gap-3 border-b border-slate-100 px-3 pb-3">
-              <Search size={20} className="text-emerald-700" />
-              <input ref={searchInputRef} className="w-full bg-transparent py-2 text-base outline-none" placeholder="Buscar granjas, lotes, clientes, facturas…" aria-label="Buscar en AVÍCOLA ERP" />
-              <button onClick={() => setSearchOpen(false)} className="rounded-lg border border-slate-200 p-1.5 text-slate-500" aria-label="Cerrar buscador"><X size={16} /></button>
-            </div>
-            <p className="px-3 py-8 text-center text-sm text-slate-500">El buscador global se conectará progresivamente a los módulos operativos.</p>
-          </div>
+      {searchOpen && <div className="fixed inset-0 z-50 bg-slate-950/35 p-4 backdrop-blur-sm" onClick={() => setSearchOpen(false)}>
+        <div role="dialog" aria-modal="true" aria-labelledby="buscador-global-titulo" className="mx-auto mt-[10vh] max-w-2xl rounded-2xl bg-white p-3 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+          <h2 id="buscador-global-titulo" className="sr-only">Buscador global</h2>
+          <div className="flex items-center gap-3 border-b border-slate-100 px-3 pb-3"><Search size={20} className="text-emerald-700" /><input ref={searchInputRef} className="w-full bg-transparent py-2 text-base outline-none" placeholder="Buscar granjas, lotes, clientes, facturas…" aria-label="Buscar en AVÍCOLA ERP" /><button onClick={() => setSearchOpen(false)} className="rounded-lg border border-slate-200 p-1.5 text-slate-500" aria-label="Cerrar buscador"><X size={16} /></button></div>
+          <p className="px-3 py-8 text-center text-sm text-slate-500">El buscador global se conectará progresivamente a los módulos operativos.</p>
         </div>
-      )}
+      </div>}
     </div>
   )
 }
