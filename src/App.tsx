@@ -9,6 +9,7 @@ import Granjas from './pages/Granjas'
 import Galpones from './pages/Galpones'
 import Lotes from './pages/Lotes'
 import ProduccionDiaria from './pages/ProduccionDiaria'
+import Recoleccion from './pages/Recoleccion'
 import ModuloAvicola from './pages/ModuloAvicola'
 import { useAuth } from './lib/auth'
 import { useEmpresa } from './lib/empresa'
@@ -42,7 +43,7 @@ export default function App() {
   if (!session) return <Login />
 
   const dashboard = AVICOLA_MODULES.find((module) => module.key === 'panel')
-  const moduleRoutes = AVICOLA_MODULES.filter((module) => !['panel', 'granjas', 'galpones', 'lotes', 'produccion'].includes(module.key))
+  const moduleRoutes = AVICOLA_MODULES.filter((module) => !['panel', 'granjas', 'galpones', 'lotes', 'produccion', 'recoleccion'].includes(module.key))
 
   return <div className="flex h-full bg-[#F6F7F9]">
     <Sidebar open={menuOpen} onClose={() => setMenuOpen(false)} />
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="/galpones" element={<Protegido modulo="galpones"><Galpones /></Protegido>} />
           <Route path="/lotes" element={<Protegido modulo="lotes"><Lotes /></Protegido>} />
           <Route path="/produccion" element={<Protegido modulo="produccion"><ProduccionDiaria /></Protegido>} />
+          <Route path="/recoleccion" element={<Protegido modulo="recoleccion"><Recoleccion /></Protegido>} />
           {moduleRoutes.map((module) => <Route key={module.path} path={module.path} element={<Protegido modulo={module.key}><ModuloAvicola titulo={module.label} descripcion={module.description} /></Protegido>} />)}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
