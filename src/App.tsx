@@ -6,6 +6,7 @@ import Cargando from './components/Cargando'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Granjas from './pages/Granjas'
+import Galpones from './pages/Galpones'
 import ModuloAvicola from './pages/ModuloAvicola'
 import { useAuth } from './lib/auth'
 import { useEmpresa } from './lib/empresa'
@@ -41,7 +42,7 @@ export default function App() {
   if (!session) return <Login />
 
   const dashboard = AVICOLA_MODULES.find((module) => module.key === 'panel')
-  const moduleRoutes = AVICOLA_MODULES.filter((module) => module.key !== 'panel' && module.key !== 'granjas')
+  const moduleRoutes = AVICOLA_MODULES.filter((module) => !['panel', 'granjas', 'galpones'].includes(module.key))
 
   return (
     <div className="flex h-full bg-[#F6F7F9]">
@@ -80,6 +81,7 @@ export default function App() {
             <Routes>
               {dashboard && <Route path={dashboard.path} element={<Protegido modulo={dashboard.key}><Dashboard /></Protegido>} />}
               <Route path="/granjas" element={<Protegido modulo="granjas"><Granjas /></Protegido>} />
+              <Route path="/galpones" element={<Protegido modulo="galpones"><Galpones /></Protegido>} />
               {moduleRoutes.map((module) => (
                 <Route key={module.path} path={module.path} element={<Protegido modulo={module.key}><ModuloAvicola titulo={module.label} descripcion={module.description} /></Protegido>} />
               ))}
