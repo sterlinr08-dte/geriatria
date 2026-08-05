@@ -5,8 +5,10 @@ import Sidebar from './components/Sidebar'
 import Cargando from './components/Cargando'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
+import Granjas from './pages/Granjas'
 import ModuloAvicola from './pages/ModuloAvicola'
 import { useAuth } from './lib/auth'
+import { useEmpresa } from './lib/empresa'
 import { MODULOS } from './lib/permisos'
 import { AVICOLA_MODULES } from './core/modules'
 
@@ -20,6 +22,7 @@ function Protegido({ modulo, children }: { modulo: string; children: ReactElemen
 
 export default function App() {
   const { session, loading, perfil } = useAuth()
+  const { empresas, empresaActiva, setEmpresaActivaId, loading: empresasLoading, error: empresaError } = useEmpresa()
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -34,11 +37,11 @@ export default function App() {
     return () => document.removeEventListener('keydown', onKeyDown)
   }, [searchOpen])
 
-  if (loading) return <div className="flex h-full items-center justify-center"><Cargando texto="Cargando AVÍCOLA ERP…" /></div>
+  if (loading || (session && empresasLoading)) return <div className="flex h-full items-center justify-center"><Cargando texto="Cargando AVÍCOLA ERP…" /></div>
   if (!session) return <Login />
 
   const dashboard = AVICOLA_MODULES.find((module) => module.key === 'panel')
-  const moduleRoutes = AVICOLA_MODULES.filter((module) => module.key !== 'panel')
+  const moduleRoutes = AVICOLA_MODULES.filter((module) => module.key !== 'panel' && module.key !== 'granjas')
 
   return (
     <div className="flex h-full bg-[#F6F7F9]">
@@ -50,19 +53,33 @@ export default function App() {
             <Search size={17} /><span className="flex-1 text-left">Buscar en AVÍCOLA ERP</span><kbd className="rounded-md border border-slate-200 bg-white px-1.5 py-0.5 text-[10px]">⌘ K</kbd>
           </button>
           <div className="ml-auto flex items-center gap-2">
-            <button className="hidden items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 sm:flex">Granja Principal <ChevronDown size={15} /></button>
+            <label className="relative hidden sm:block">
+              <span className="sr-only">Empresa activa</span>
+              <select
+                className="appearance-none rounded-xl border border-slate-200 bg-white py-2 pl-3 pr-9 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                value={empresaActiva?.id || ''}
+                onChange={(event) => setEmpresaActivaId(event.target.value)}
+                disabled={empresas.length === 0}
+              >
+                {empresas.length === 0 && <option value="">Sin empresa</option>}
+                {empresas.map((empresa) => <option key={empresa.id} value={empresa.id}>{empresa.nombre}</option>)}
+              </select>
+              <ChevronDown size={15} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" />
+            </label>
             <button className="rounded-xl p-2.5 text-slate-500 hover:bg-slate-100" aria-label="Configuración rápida"><Settings2 size={19} /></button>
             <button className="relative rounded-xl p-2.5 text-slate-500 hover:bg-slate-100" aria-label="Notificaciones"><Bell size={19} /><span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" /></button>
             <div className="ml-1 flex items-center gap-2 border-l border-slate-200 pl-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-700 text-sm font-bold text-white">AE</div>
-              <div className="hidden leading-tight lg:block"><p className="text-sm font-semibold text-slate-900">{perfil?.nombre || perfil?.username || 'Administrador'}</p><p className="text-xs text-slate-500">{perfil?.rol_nombre || 'Usuario'}</p></div>
+              <div className="hidden leading-tight lg:block"><p className="text-sm font-semibold text-slate-900">{perfil?.nombre || perfil?.username || 'Administrador'}</p><p className="text-xs text-slate-500">{empresaActiva?.rol || perfil?.rol_nombre || 'Usuario'}</p></div>
             </div>
           </div>
         </header>
         <main className="flex-1 overflow-y-auto">
           <div className="contenido-principal mx-auto max-w-[1720px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
+            {empresaError && <div role="alert" className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">No fue posible cargar las empresas: {empresaError}</div>}
             <Routes>
               {dashboard && <Route path={dashboard.path} element={<Protegido modulo={dashboard.key}><Dashboard /></Protegido>} />}
+              <Route path="/granjas" element={<Protegido modulo="granjas"><Granjas /></Protegido>} />
               {moduleRoutes.map((module) => (
                 <Route key={module.path} path={module.path} element={<Protegido modulo={module.key}><ModuloAvicola titulo={module.label} descripcion={module.description} /></Protegido>} />
               ))}
@@ -80,7 +97,7 @@ export default function App() {
               <input ref={searchInputRef} className="w-full bg-transparent py-2 text-base outline-none" placeholder="Buscar granjas, lotes, clientes, facturas…" aria-label="Buscar en AVÍCOLA ERP" />
               <button onClick={() => setSearchOpen(false)} className="rounded-lg border border-slate-200 p-1.5 text-slate-500" aria-label="Cerrar buscador"><X size={16} /></button>
             </div>
-            <p className="px-3 py-8 text-center text-sm text-slate-500">El buscador global se conectará a los módulos y datos de Supabase durante esta fase.</p>
+            <p className="px-3 py-8 text-center text-sm text-slate-500">El buscador global se conectará progresivamente a los módulos operativos.</p>
           </div>
         </div>
       )}
