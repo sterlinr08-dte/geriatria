@@ -8,6 +8,8 @@ import type { DataColumn } from '../design-system'
 
 const PAGE_SIZE = 15
 
+type NumericDb = number | string
+
 type Row = {
   empresa_id: string
   presentacion_id: string
@@ -17,8 +19,8 @@ type Row = {
   fecha_vencimiento: string
   presentacion: string
   lote_codigo: string
-  empaques_disponibles: number
-  unidades_disponibles: number
+  empaques_disponibles: NumericDb
+  unidades_disponibles: NumericDb
   dias_restantes: number
   estado_fefo: 'VIGENTE' | 'PROXIMO' | 'CRITICO' | 'VENCIDO'
 }
@@ -80,8 +82,8 @@ export default function InventarioHuevos() {
     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <KpiCard label="Huevos visibles" value={resumen.unidades.toLocaleString('es-DO')} icon={Egg} helper="página actual" />
       <KpiCard label="Empaques visibles" value={resumen.empaques.toLocaleString('es-DO')} icon={Boxes} helper="página actual" />
-      <KpiCard label="Próximos a vencer" value={resumen.proximos} icon={CalendarClock} helper="7 días o menos" />
-      <KpiCard label="Vencidos" value={resumen.vencidos} icon={ShieldAlert} helper="requieren revisión" />
+      <KpiCard label="Próximos a vencer" value={resumen.proximos} icon={CalendarClock} helper="página actual · 7 días o menos" />
+      <KpiCard label="Vencidos" value={resumen.vencidos} icon={ShieldAlert} helper="página actual · requieren revisión" />
     </section>
     <DataTable
       rows={rows}
