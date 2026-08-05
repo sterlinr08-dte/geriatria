@@ -1,4 +1,4 @@
-export function mensajeErrorSupabase(error: unknown): string {
+export function traducirError(error: unknown): string {
   const mensaje = error instanceof Error
     ? error.message
     : typeof error === 'object' && error && 'message' in error
@@ -7,6 +7,12 @@ export function mensajeErrorSupabase(error: unknown): string {
 
   const normalizado = mensaje.toLowerCase()
 
+  if (normalizado.includes('capacidad del galpón') || normalizado.includes('capacidad del galpon')) {
+    return mensaje || 'La cantidad de aves supera la capacidad disponible del galpón.'
+  }
+  if (normalizado.includes('galpón no disponible') || normalizado.includes('galpon no disponible')) {
+    return 'El galpón seleccionado no está disponible para recibir lotes.'
+  }
   if (normalizado.includes('duplicate key') || normalizado.includes('unique constraint')) {
     return 'Ya existe un registro con ese código o nombre.'
   }
@@ -25,3 +31,6 @@ export function mensajeErrorSupabase(error: unknown): string {
 
   return 'No se pudo completar la operación. Inténtalo nuevamente.'
 }
+
+// Alias temporal para módulos anteriores. Se retirará cuando todos usen traducirError.
+export const mensajeErrorSupabase = traducirError
