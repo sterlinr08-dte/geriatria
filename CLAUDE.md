@@ -39,9 +39,12 @@
 3. Si vienes a **revisar código** (Claude): pedir el rango de commits exacto y seguir el flujo de
    revisión de arriba (tsc + build + lectura de diff, reporte por gravedad).
 4. **Pendientes vivos:**
-   - Definir el **esquema de datos real** de AVÍCOLA (granjas, galpones, lotes, producción,
-     sanidad, inventario, ventas…) — hoy Fases 1-2 son solo interfaz, sin ninguna tabla ni CRUD
-     conectado a Supabase todavía.
+   - Continuar con los módulos que siguen siendo placeholder (ver "Estado actual"): el esquema de
+     datos real ya está definido y aplicado para la cadena Granjas→Cuentas por Cobrar.
+   - ⏳ **Desplegar a Cloudflare** el estado actual de `main`. El deploy es **manual**: el repo no
+     tiene GitHub Actions, ni `wrangler.toml`, ni rama `gh-pages`, ni `dist/` versionado, así que
+     fusionar a `main` **no publica nada** por sí solo.
+   - ⏳ Decidir qué hacer con el **código clínico heredado** que sigue en el árbol (ver abajo).
    - ✅ **SSO desactivado** (2026-08-05): `organizaciones.slug='geriatra'` → `activo=false` en la
      base madre NEXUS PRO. El registro no se borró (reversible), solo dejó de enrutar el login.
    - ⏳ **Renombrar el proyecto Supabase** en el dashboard (sigue mostrando "Consultorio
@@ -75,10 +78,34 @@ dependencias (verificado). Primeros componentes del Design System: `PageHeader`,
 `src/design-system/`), con jerarquía de encabezados y accesibilidad correctas. `ModuloAvicola.tsx`
 migrado a esos componentes reutilizables. Revisado por Claude sin errores bloqueantes.
 
-### ⏳ Pendiente — Fase 3 en adelante (a definir por ChatGPT)
-Ningún módulo tiene todavía CRUD real ni tablas propias en Supabase. `ModuloAvicola.tsx` es un
-placeholder estático en todas las rutas salvo el Dashboard (también con datos de muestra, sin
-conexión real).
+### ✅ Fases 3-10 — Cadena operativa y comercial (hecho, auditado)
+Cada módulo se construyó con backend transaccional en Supabase (migración propia, RLS, funciones
+`SECURITY DEFINER`, FK compuestas `(id, empresa_id)`, auditoría y `updated_at`) y luego frontend
+sobre el Design System. Todos auditados por Claude con pruebas empíricas (SQL real, concurrencia
+real en transacciones paralelas, navegador headless sobre el build servido):
+
+| Módulo | Backend | Frontend | Notas |
+|---|---|---|---|
+| Granjas · Galpones · Lotes | ✅ | ✅ | guard de capacidad de galpón |
+| Producción diaria | ✅ | ✅ | snapshot de aves vivas |
+| Recolección | ✅ | ✅ | consolidación con índice único parcial |
+| Clasificación | ✅ | ✅ | una clasificación activa por producción |
+| Empaque | ✅ | ✅ | sincroniza movimiento de inventario por trigger |
+| Inventario de huevos | ✅ (vista) | ✅ | saldos derivados, FEFO, `security_invoker` |
+| Ventas | ✅ | ✅ | consumo FEFO con `FOR UPDATE`, techo de descuento |
+| Cuentas por cobrar | ✅ | ✅ | saldo derivado, abonos, numeración por empresa |
+
+**Patrones establecidos** (respetarlos en módulos nuevos): saldo/estado siempre **derivado**, nunca
+columna editable; toda escritura crítica va por RPC `SECURITY DEFINER`, nunca INSERT directo desde
+el cliente; concurrencia serializada con `SELECT ... FOR UPDATE` y recálculo **después** del lock;
+"como máximo una fila activa" con índice único **parcial** (`WHERE deleted_at IS NULL`); errores de
+carga y errores de acción en estados separados (`loadError` / `actionError`) para que un fallo de
+acción no borre la tabla; guard de solicitud obsoleta (`requestRef`) en **cada** consulta asíncrona.
+
+### ⏳ Pendiente — módulos aún en placeholder
+Siguen usando `ModuloAvicola.tsx`: inventario de alimentos, consumo, sanidad, mortalidad, calidad,
+compras, proveedores, clientes, cuentas por pagar, gastos, rentabilidad, reportes y configuración.
+El Dashboard sigue con datos de muestra, sin conexión real.
 
 ## Base de datos
 
@@ -94,7 +121,22 @@ conexión real).
   `empleados`, `compras`, `caja`, `chat`, `tareas`, `avisos`, `roles`, `perfiles`, etc.) + `procesos`
   (genérica — reglamentos/procesos administrativos, reusable tal cual, con RLS "todos leen, solo
   admin edita"). **Su destino para AVÍCOLA — reusar/adaptar columnas vs. reconstruir desde cero —
-  es una decisión de arquitectura de datos pendiente, de ChatGPT.**
+  es una decisión de arquitectura de datos pendiente, de ChatGPT.** AVÍCOLA **no** las usa: creó
+  sus propias tablas (`granjas`, `galpones`, `lotes`, `produccion_diaria`, `clasificaciones_huevos`,
+  `empaques_huevos`, `movimientos_inventario_huevos`, `ventas_huevos`, `venta_huevos_detalles`,
+  `clientes_comerciales`, `cuentas_por_cobrar`, `movimientos_cxc`, …) más `private.avicola_numeradores`.
+- **Roles de `empresa_usuarios.rol`** (CHECK vigente): `propietario`, `administrador`, `supervisor`,
+  `produccion`, `empaque`, `veterinario`, `inventario`, `ventas`, `cobranzas`, `consulta`. Si un
+  módulo nuevo necesita un rol que no esté en esa lista, hay que **ampliar el CHECK en la misma
+  migración**; si no, las políticas RLS que lo mencionen nunca harán match y fallarán en silencio.
+- ✅ **TRUNCATE revocado globalmente (2026-08-06):** `anon` y `authenticated` ya no pueden hacer
+  TRUNCATE sobre ninguna tabla de `public` (antes lo tenían en 67 tablas por herencia del molde;
+  TRUNCATE ignora RLS). Los DEFAULT PRIVILEGES de `postgres` también quedaron sin TRUNCATE, así que
+  las tablas futuras nacen endurecidas. **Riesgo latente:** los DEFAULT PRIVILEGES de
+  `supabase_admin` sí conservan TRUNCATE y no se pueden modificar sin autorización de plataforma;
+  solo aplicarían a una tabla de `public` creada por ese rol, cosa que no ocurre en el flujo de
+  migraciones (las 64 tablas son de `postgres`). Chequeo periódico sugerido:
+  `select table_name, grantee from information_schema.role_table_grants where privilege_type='TRUNCATE' and grantee in ('anon','authenticated') and table_schema='public';`
 - `.env.example` ya documenta que el proyecto es exclusivo de AVÍCOLA (advierte no reusar
   credenciales de otros clientes en producción), pero la URL/anon key siguen siendo las de
   `xqcrpsqhjznltthnfysw` desde que se decidió reusar el proyecto en vez de crear uno nuevo.
@@ -130,19 +172,32 @@ Requiere `.env` (copiar de `.env.example`) con `VITE_SUPABASE_URL`/`VITE_SUPABAS
 
 - **`src/core/modules.ts`**: catálogo único de módulos — fuente de verdad de rutas, permisos y
   menú. No dupliques esta información en otro archivo; todo se deriva de aquí.
-- **`src/design-system/`**: componentes reutilizables del Design System (`PageHeader`,
-  `EmptyState`, …).
+- **`src/design-system/`**: componentes reutilizables (`PageHeader`, `EmptyState`, `AlertBanner`,
+  `KpiCard`, `DataTable`, `Modal`, `FormField`, `StatusBadge`). **Usarlos siempre**: no reinventes
+  tablas, modales ni banners con JSX paralelo.
 - **`src/lib/`**: `supabase.ts` (cliente), `auth.tsx` (sesión/permisos vía `puede()`/
-  `puedeAccion()`), `permisos.ts` (deriva de `core/modules.ts`).
-- **`src/pages/`**: una página por módulo; hoy todas usan `ModuloAvicola.tsx` como placeholder
-  salvo `Dashboard.tsx`.
-- Páginas/lib clínicas (heredadas del consultorio) siguen presentes en el repo pero **sin ruta
-  activa** desde Fase 1 — pendiente decidir si se eliminan o se conservan como referencia.
+  `puedeAccion()`), `permisos.ts` (deriva de `core/modules.ts`), `empresa.tsx` (empresa activa),
+  `errores.ts` (`traducirError()` — preserva los mensajes de negocio del backend, p. ej. inventario
+  insuficiente o techo de descuento; si añades una excepción nueva con texto propio, agrégala ahí o
+  el usuario verá el mensaje genérico).
+- **`src/pages/`**: una página por módulo. Las de la cadena operativa/comercial son reales; el resto
+  sigue usando `ModuloAvicola.tsx` como placeholder.
+- **`supabase/migrations/`**: 17 migraciones `*_avicola_*` aplicadas, versionadas en el repo y
+  coincidentes con la base real (verificado en cada auditoría).
+- **Código clínico heredado:** siguen en el árbol, **sin ruta activa** desde Fase 1, las páginas
+  `FichaPaciente`, `EscalasGeriatricas`, `ValoracionGeriatrica`, `MedicacionPaciente`,
+  `ProblemasPaciente`, `VacunasPaciente`, `TendenciasPaciente`, `ImagenesPaciente`, `Recetas`, y las
+  libs `escalas.ts`, `cie10.ts`, `fragilidad.ts`. Al no estar enrutadas, el tree-shaking las deja
+  fuera del bundle (verificado: 0 coincidencias en `dist/`), así que no pesan en producción.
+  Pendiente decidir si se eliminan o se conservan como referencia del molde geriátrico.
 
 ## Reglas del dueño (heredadas del ecosistema NEXUS PRO — vigentes salvo que se indique lo contrario)
 
 - Móvil primero, sin desbordes horizontales.
 - Publicar a `main` en versiones pequeñas y probadas; avisar antes si el cambio es grande/riesgoso.
+  **Estado a 2026-08-06:** `main` fue puesto al día con un fast-forward de 108 commits desde
+  `claude/sigamos-oaao1q`. Ambas ramas están al mismo commit. Conviene no volver a acumular tanto:
+  fusionar a `main` al cerrar cada módulo.
 - **Sin emojis en la interfaz** — solo iconos (lucide) y texto.
 - **Claves y secretos: nunca en el repo.**
 - **Actualizar este CLAUDE.md tras cada cambio importante.**
@@ -155,8 +210,12 @@ Requiere `.env` (copiar de `.env.example`) con `VITE_SUPABASE_URL`/`VITE_SUPABAS
 > "base por cliente" del ecosistema NEXUS PRO, mismo molde que Amatista Dental y Deluxe). El
 > Dr. Marcos Cepeda decidió no usar el sistema; el trabajo (Fases 0–5, completo y desplegado en
 > su momento) se conserva aquí como **referencia/molde** para un futuro cliente geriátrico.
-> - El **código** sigue accesible en el historial de git de esta misma rama hasta el commit
->   `583b0d7` (último estado 100% clínico) — ej. `git checkout 583b0d7 -- src/lib/escalas.ts`.
+> - El **código no hay que rescatarlo del historial**: buena parte sigue presente en el árbol actual
+>   (páginas y libs clínicas sin ruta activa — ver "Arquitectura" arriba). Para el resto, el
+>   historial de git lo conserva completo. `583b0d7` es el último commit **antes del pivote
+>   documental**, no un estado 100% clínico: para esa fecha las rutas clínicas ya estaban retiradas.
+>   El estado clínico íntegro está más atrás, en los commits de las Fases 0-5 (`b24937a` "Ficha:
+>   panel de alertas + índice de fragilidad" es el último que tocó `FichaPaciente.tsx`).
 > - El **respaldo de base de datos** (DDL + RLS + datos de las 8 tablas clínicas retiradas) se
 >   entregó al dueño como archivo aparte el 2026-08-05.
 > - Las ~45 tablas base (clientes, facturas, empleados, etc.) **no se borraron** — siguen en el
