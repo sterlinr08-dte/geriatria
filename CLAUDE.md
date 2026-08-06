@@ -41,12 +41,13 @@
 4. **Pendientes vivos:**
    - Continuar con los módulos que siguen siendo placeholder (ver "Estado actual"): el esquema de
      datos real ya está definido y aplicado para la cadena Granjas→Cuentas por Cobrar.
-   - ⏳ **Desplegar a Cloudflare** el estado actual de `main`. El deploy es **manual**: el repo no
-     tiene GitHub Actions, ni `wrangler.toml`, ni rama `gh-pages`, ni `dist/` versionado, así que
-     fusionar a `main` **no publica nada** por sí solo.
+   - ✅ **Desplegado y en vivo** (2026-08-06) — ver sección "Deploy" abajo para el estado completo
+     (dos dominios, un worker viejo pendiente de retirar, workflow de GitHub Actions redundante).
    - ⏳ Decidir qué hacer con el **código clínico heredado** que sigue en el árbol (ver abajo).
-   - ✅ **SSO desactivado** (2026-08-05): `organizaciones.slug='geriatra'` → `activo=false` en la
-     base madre NEXUS PRO. El registro no se borró (reversible), solo dejó de enrutar el login.
+   - ✅ **SSO desactivado a propósito** (2026-08-05, confirmado 2026-08-06): `organizaciones.slug=
+     'geriatra'` → `activo=false` en la base madre NEXUS PRO. Decisión del dueño: AVÍCOLA tiene
+     **login independiente** por ahora; el SSO de NEXUS PRO solo se activa si un cliente puntual lo
+     pide. El registro no se borró (reversible).
    - ⏳ **Renombrar el proyecto Supabase** en el dashboard (sigue mostrando "Consultorio
      Geriatra"; sin API/MCP para esto — paso manual del dueño, ver guía abajo).
    - ⏳ **Renombrar el repo de GitHub** (`geriatria` → algo como `avicola-erp`; sin API/MCP para
@@ -107,6 +108,66 @@ Siguen usando `ModuloAvicola.tsx`: inventario de alimentos, consumo, sanidad, mo
 compras, proveedores, clientes, cuentas por pagar, gastos, rentabilidad, reportes y configuración.
 El Dashboard sigue con datos de muestra, sin conexión real.
 
+### ✅ Datos de demostración cargados (2026-08-06)
+Para ver el sistema con números reales en vez de vacío: 2 granjas, 3 galpones, 2 lotes con 5 días
+de producción cada uno (50k+ huevos), clasificación, 6 empaques en 2 presentaciones, 3 clientes
+comerciales, 4 ventas (contado/crédito/borrador), 2 cuentas por cobrar (una con abono parcial de
+RD$25,000 aplicado). Esto expuso y permitió corregir el bug de inventario de abajo.
+
+**Bug corregido — inventario no descontaba salidas de venta:** la vista
+`inventario_huevos_saldos` agrupaba por `fecha`, pero las entradas (fecha del empaque) y las
+salidas (fecha de la venta) caían en grupos distintos, así que nunca se restaban entre sí — la
+pantalla mostraba huevos ya vendidos como disponibles. Corregido en la migración
+`20260806053000_avicola_inventario_saldos_descuenta_salidas.sql`: la vista ahora calcula
+disponible por lote de entrada (`ENTRADA_EMPAQUE`) menos sus salidas asociadas por
+`movimiento_origen_id`, el mismo cálculo que ya usaba `avicola_confirmar_venta()` para FEFO.
+
+## Deploy
+
+- ✅ **En vivo desde 2026-08-06.** Cloudflare Workers con **Git integration nativa** (no CLI): cada
+  push a `main` dispara build (`npm run build`) y deploy dentro de la infraestructura de
+  Cloudflare — sin depender de `wrangler` local ni de GitHub Actions (ambos fallan por el proxy del
+  entorno de desarrollo remoto, ver más abajo).
+- **Proyecto Cloudflare:** `avicola-app` (Workers y Páginas → Import a repository → repo
+  `sterlinr08-dte/geriatria`, rama `main`, build command `npm run build`, output `dist`). Variables
+  de entorno `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` puestas ahí directamente en el dashboard
+  de Cloudflare (no en GitHub Secrets — el build corre en infraestructura de Cloudflare).
+- **Dos dominios coexistiendo temporalmente (decisión pendiente de consolidar):**
+  - `geriatra.nexusprord.com` → sigue sirviendo desde el **worker viejo `geriatria`** (deploy
+    manual vía `wrangler`, sin auto-deploy). Confirmado funcionando 2026-08-06.
+  - `avicola.nexusprord.com` → agregado como dominio personalizado al proyecto **`avicola-app`**
+    (el que sí tiene auto-deploy). Agregado 2026-08-06, **pendiente de confirmar que ya propagó**
+    (SSL/DNS puede tardar unos minutos; última prueba del dueño aún no cargaba).
+  - Ambos son subdominios de una zona que el dueño ya controla en Cloudflare (`nexusprord.com`) —
+    no se compró dominio nuevo. Cuando `avicola.nexusprord.com` esté confirmado, decidir si
+    `geriatra.nexusprord.com` se retira o se deja como alias.
+- **Worker `geriatria` (viejo):** decisión del dueño (2026-08-06) fue **dejarlo activo por ahora**
+  como respaldo, no borrarlo, hasta confirmar que `avicola-app`/`avicola.nexusprord.com` funciona.
+- **`.github/workflows/deploy.yml`:** existe en el repo pero **falla en cada push** (exit code 1 en
+  el paso `wrangler deploy`, mismo problema de proxy que bloquea `wrangler` en local). Decisión del
+  dueño (2026-08-06): **dejarlo como está**, no es la vía real de deploy (esa es la Git integration
+  de Cloudflare de arriba) — puede arreglarse más adelante si se necesita deploy vía CLI. Ojo: cada
+  push a `main` va a seguir generando una notificación de fallo en GitHub Actions; es ruido
+  esperado, no indica que el deploy real (Cloudflare) haya fallado.
+- **`wrangler.toml`** y los scripts `deploy`/`deploy:dry`/`cf:login`/`cf:whoami` de `package.json`
+  quedan en el repo como vía de deploy manual de respaldo (funcionan solo desde una red sin el
+  proxy que bloquea la API de Cloudflare — no funcionan desde este entorno remoto de desarrollo).
+- **Credenciales de Cloudflare:** el dueño compartió su Global API Key para automatizar deploys;
+  vive en GitHub Secrets (`CLOUDFLARE_API_KEY`, `CLOUDFLARE_EMAIL`) para el workflow (aunque este
+  no sea la vía real de deploy) y en el scratchpad de la sesión que la configuró — **nunca en el
+  repo**.
+
+## Acceso al sistema
+
+- **Login:** usuario `admin@geriatra.local`. Contraseña reseteada 2026-08-06 vía SQL directo —
+  `crypt(..., gen_salt('bf'))` sobre `auth.users.encrypted_password`, mismo hash que usa Supabase
+  Auth — **compartida con el dueño fuera del repo, no vive aquí**. El dominio `@geriatra.local` es
+  ficticio (no resuelve en internet real, es solo un identificador dentro de `auth.users`), así que
+  **este usuario no puede recibir emails de recuperación de contraseña** — cualquier reset futuro
+  tiene que ser por SQL directo, no por el flujo normal de "olvidé mi contraseña".
+- Ese mismo usuario ya existía desde el sistema clínico (antes `doctor@geriatra.local`, ver
+  histórico) y se reusó para AVÍCOLA en vez de crear uno nuevo.
+
 ## Base de datos
 
 - Se **reusa el proyecto Supabase de geriatría** (`xqcrpsqhjznltthnfysw`, org `sterlinr08`, plan
@@ -140,13 +201,15 @@ El Dashboard sigue con datos de muestra, sin conexión real.
 - `.env.example` ya documenta que el proyecto es exclusivo de AVÍCOLA (advierte no reusar
   credenciales de otros clientes en producción), pero la URL/anon key siguen siendo las de
   `xqcrpsqhjznltthnfysw` desde que se decidió reusar el proyecto en vez de crear uno nuevo.
-- ✅ **SSO desactivado (2026-08-05):** en la base madre NEXUS PRO (`tnwsgcxurfyuszxsewsn`, tabla
-  `organizaciones`, fila `slug='geriatra'`) se puso `activo=false`. El registro **no se borró**
-  (reversible), pero ya no enruta el login de `nexusprord.com` a este proyecto. Sigue con
-  `dominio='geriatra.nexusprord.com'` y `auth_url`/`auth_key` viejos por si se reactiva.
-- El usuario `doctor@geriatra.local` (rol admin) sigue existiendo en `auth.users`/`perfiles`/
-  `roles` — no se tocó; sirve como cuenta admin de arranque si se reusa para AVÍCOLA, o se puede
-  reemplazar/borrar cuando se defina el modelo de usuarios real.
+- ✅ **SSO desactivado a propósito (2026-08-05, confirmado 2026-08-06):** en la base madre NEXUS
+  PRO (`tnwsgcxurfyuszxsewsn`, tabla `organizaciones`, fila `slug='geriatra'`) sigue `activo=false`.
+  Decisión del dueño: login independiente por ahora, sin pasar por el hub de NEXUS PRO; se
+  reconsidera si algún cliente puntual pide entrar por ahí. El registro no se borró (reversible).
+  Actualizado 2026-08-06: `nombre='AVÍCOLA ERP'`, `dominio='avicola.nexusprord.com'` (antes
+  `geriatra.nexusprord.com`) — solo son datos informativos mientras `activo=false`, no enrutan nada.
+- El usuario `admin@geriatra.local` (antes `doctor@geriatra.local`, rol admin) sigue existiendo en
+  `auth.users`/`perfiles`/`roles` — se reusó para AVÍCOLA en vez de crear uno nuevo. Contraseña
+  reseteada 2026-08-06 (ver sección "Acceso al sistema" arriba).
 
 ## Pasos manuales pendientes (el dueño, sin API/MCP disponible)
 
@@ -272,6 +335,6 @@ Infoplus) — el doctor tenía su propia app, su propia base de datos y su subdo
 |---|---|---|---|
 | NEXUS PRO (madre) | `sterlinr08-dte/nexus-pro` | `tnwsgcxurfyuszxsewsn` | nexusprord.com |
 | Amatista Dental (MOLDE) | `sterlinr08-dte/amatista-dental` | `sdxyqaawxomnfhyaxuyo` | — |
-| Consultorio Dr. Marcos Cepeda (histórico, ahora AVÍCOLA) | `sterlinr08-dte/geriatria` | `xqcrpsqhjznltthnfysw` | geriatra.nexusprord.com *(SSO pendiente de actualizar)* |
+| Consultorio Dr. Marcos Cepeda (histórico, ahora AVÍCOLA) | `sterlinr08-dte/geriatria` | `xqcrpsqhjznltthnfysw` | avicola.nexusprord.com *(en propagación)* / geriatra.nexusprord.com *(respaldo activo, sin auto-deploy)* — SSO desactivado a propósito |
 
 > Contexto completo original: `sterlinr08-dte/nexus-pro` → `CONSULTORIO-CLAUDE.md`.
