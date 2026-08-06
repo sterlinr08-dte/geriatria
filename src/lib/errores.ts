@@ -10,6 +10,13 @@ export function traducirError(error: unknown): string {
   const mensaje = extraerMensaje(error)
   const normalizado = mensaje.toLowerCase()
 
+  if (
+    normalizado.includes('faltan') && normalizado.includes('unidades') ||
+    normalizado.includes('inventario insuficiente') ||
+    normalizado.includes('descuento no puede superar el subtotal')
+  ) {
+    return mensaje
+  }
   if (normalizado.includes('capacidad del galpón') || normalizado.includes('capacidad del galpon')) {
     return mensaje
   }
