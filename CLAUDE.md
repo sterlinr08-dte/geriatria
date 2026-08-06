@@ -24,6 +24,11 @@
   objetiva y lo aprueba el dueño o ChatGPT.
 - Todo comentario debe basarse en evidencia técnica (build real, tsc real, SQL real), no en
   preferencia personal.
+- **Entrega de los reportes para ChatGPT (regla del dueño):** cuando Claude termine una revisión y
+  haya que pasarle los hallazgos a ChatGPT, el mensaje se entrega **siempre como artefacto HTML**
+  (no como texto en el chat) — al dueño le resulta más fácil copiarlo y enviarlo. Mismo contenido de
+  siempre: veredicto, qué quedó bien, hallazgos clasificados por gravedad con archivo/línea/
+  evidencia/corrección.
 
 ## AL ABRIR ESTE CHAT — empezar por aquí
 
