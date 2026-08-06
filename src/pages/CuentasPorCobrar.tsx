@@ -1,278 +1,183 @@
-import { useEffect, useState } from 'react'
-import { HandCoins, Wallet, Printer } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { FormEvent } from 'react'
+import { CalendarClock, CircleDollarSign, ClockAlert, HandCoins, RefreshCw, Search, Users } from 'lucide-react'
 import { supabase } from '../lib/supabase'
-import { Factura, FacturaAbono } from '../types'
-import { money, fechaCorta, fechaHora, hoyISO, codigoFactura } from '../lib/format'
-import { METODOS_PAGO } from '../lib/constants'
-import { useAuth } from '../lib/auth'
-import { useNegocio } from '../lib/negocio'
-import PageHeader from '../components/PageHeader'
-import Cargando from '../components/Cargando'
-import Modal from '../components/Modal'
-import DataTable from '../components/DataTable'
+import { useEmpresa } from '../lib/empresa'
+import { traducirError } from '../lib/errores'
+import { AlertBanner, DataTable, FormField, KpiCard, Modal, PageHeader, StatusBadge } from '../design-system'
+import type { DataColumn } from '../design-system'
 
-interface FilaCobro extends Factura {
-  abonado: number
-  saldo: number
+const PAGE_SIZE = 15
+const WRITERS = ['propietario', 'administrador', 'supervisor', 'cobranzas']
+type NumericDb = number | string
+type EstadoOperativo = 'PENDIENTE' | 'PARCIAL' | 'VENCIDA' | 'SALDADA' | 'ANULADA'
+
+type CuentaRow = {
+  id: string
+  numero: string
+  cliente_nombre: string
+  fecha_emision: string
+  fecha_vencimiento: string
+  cargos: NumericDb
+  creditos: NumericDb
+  saldo: NumericDb
+  dias_vencidos: number
+  estado_operativo: EstadoOperativo
 }
 
-interface ReciboAbono {
-  factura: FilaCobro
-  monto: number
-  metodo: string
-  abonadoAntes: number
-  saldoRestante: number
-  hora: string
+type MovimientoRow = {
+  id: string
+  numero: string
+  tipo: string
+  monto: NumericDb
+  fecha: string
+  referencia: string | null
+}
+
+type FormState = { monto: string; fecha: string; referencia: string; observaciones: string }
+
+const hoy = new Date().toISOString().slice(0, 10)
+const formInicial: FormState = { monto: '', fecha: hoy, referencia: '', observaciones: '' }
+const dinero = (value: NumericDb) => `RD$ ${Number(value).toLocaleString('es-DO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+const fechaLocal = (value: string) => new Date(`${value}T00:00:00`).toLocaleDateString('es-DO')
+
+function tonoEstado(estado: EstadoOperativo): 'success' | 'danger' | 'warning' | 'neutral' {
+  if (estado === 'SALDADA') return 'success'
+  if (estado === 'VENCIDA' || estado === 'ANULADA') return 'danger'
+  if (estado === 'PARCIAL') return 'warning'
+  return 'neutral'
 }
 
 export default function CuentasPorCobrar() {
-  const { perfil, puedeAccion } = useAuth()
-  const { negocio } = useNegocio()
-  const puedeCobrar = puedeAccion('creditos.cobrar')
-  const [recibo, setRecibo] = useState<ReciboAbono | null>(null)
-
-  const [filas, setFilas] = useState<FilaCobro[]>([])
-  const [abonosByFactura, setAbonosByFactura] = useState<Record<string, FacturaAbono[]>>({})
+  const { empresaActiva } = useEmpresa()
+  const [rows, setRows] = useState<CuentaRow[]>([])
+  const [page, setPage] = useState(0)
+  const [total, setTotal] = useState(0)
+  const [search, setSearch] = useState('')
+  const [estado, setEstado] = useState('TODOS')
   const [loading, setLoading] = useState(true)
-  const [verSaldadas, setVerSaldadas] = useState(false)
-
-  // modal de abono
-  const [abonoFactura, setAbonoFactura] = useState<FilaCobro | null>(null)
-  const [abonoMonto, setAbonoMonto] = useState(0)
-  const [abonoMetodo, setAbonoMetodo] = useState('Efectivo')
-  const [abonoNotas, setAbonoNotas] = useState('')
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selected, setSelected] = useState<CuentaRow | null>(null)
+  const [movimientos, setMovimientos] = useState<MovimientoRow[]>([])
+  const [movimientosLoading, setMovimientosLoading] = useState(false)
+  const [form, setForm] = useState<FormState>(formInicial)
   const [saving, setSaving] = useState(false)
+  const montoRef = useRef<HTMLInputElement>(null)
+  const requestRef = useRef(0)
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  async function cargar() {
-    setLoading(true)
-    const { data: facts } = await supabase
-      .from('facturas')
-      .select('*')
-      .eq('tipo_venta', 'CREDITO')
-      .neq('estado', 'ANULADA')
-      .order('fecha', { ascending: false })
-    const lista = (facts ?? []) as Factura[]
-    const ids = lista.map((f) => f.id)
-    let abonos: FacturaAbono[] = []
-    if (ids.length) {
-      const { data } = await supabase.from('factura_abonos').select('*').in('factura_id', ids).order('created_at')
-      abonos = (data ?? []) as FacturaAbono[]
-    }
-    const porFactura: Record<string, FacturaAbono[]> = {}
-    for (const a of abonos) (porFactura[a.factura_id] ??= []).push(a)
-    setAbonosByFactura(porFactura)
-    setFilas(
-      lista.map((f) => {
-        const abonado = (porFactura[f.id] ?? []).reduce((s, a) => s + Number(a.monto), 0)
-        return { ...f, abonado, saldo: Math.max(0, Number(f.total) - abonado) }
-      }),
-    )
+  const puedeCobrar = !!empresaActiva && WRITERS.includes(empresaActiva.rol)
+
+  const cargar = async (busqueda = search, filtroEstado = estado) => {
+    const requestId = ++requestRef.current
+    if (!empresaActiva) { setRows([]); setTotal(0); setLoading(false); return }
+    setLoading(true); setLoadError(null)
+    const from = page * PAGE_SIZE
+    let query = supabase
+      .from('cuentas_por_cobrar_saldos')
+      .select('id,numero,cliente_nombre,fecha_emision,fecha_vencimiento,cargos,creditos,saldo,dias_vencidos,estado_operativo', { count: 'exact' })
+      .eq('empresa_id', empresaActiva.id)
+      .order('fecha_vencimiento', { ascending: true })
+      .range(from, from + PAGE_SIZE - 1)
+
+    const term = busqueda.trim().replace(/[%_,()]/g, '')
+    if (term) query = query.or(`numero.ilike.%${term}%,cliente_nombre.ilike.%${term}%`)
+    if (filtroEstado !== 'TODOS') query = query.eq('estado_operativo', filtroEstado)
+
+    const { data, count, error } = await query
+    if (requestId !== requestRef.current) return
+    if (error) setLoadError(traducirError(error))
+    setRows((data || []) as CuentaRow[])
+    setTotal(count || 0)
     setLoading(false)
   }
 
   useEffect(() => {
-    cargar()
-  }, [])
+    requestRef.current += 1
+    setRows([]); setTotal(0); setPage(0); setSearch(''); setEstado('TODOS')
+    setLoadError(null); setActionError(null)
+  }, [empresaActiva?.id])
 
-  function abrirAbono(f: FilaCobro) {
-    setAbonoFactura(f)
-    setAbonoMonto(f.saldo)
-    setAbonoMetodo('Efectivo')
-    setAbonoNotas('')
+  useEffect(() => { void cargar() }, [empresaActiva?.id, page, estado])
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => { setPage(0); void cargar(search, estado) }, 350)
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  }, [search])
+
+  const resumen = useMemo(() => ({
+    saldo: rows.reduce((sum, row) => sum + Number(row.saldo), 0),
+    vencido: rows.filter((row) => row.estado_operativo === 'VENCIDA').reduce((sum, row) => sum + Number(row.saldo), 0),
+    porVencer: rows.filter((row) => row.estado_operativo === 'PENDIENTE' || row.estado_operativo === 'PARCIAL').reduce((sum, row) => sum + Number(row.saldo), 0),
+    clientes: new Set(rows.filter((row) => Number(row.saldo) > 0).map((row) => row.cliente_nombre)).size,
+  }), [rows])
+
+  const abrirAbono = async (cuenta: CuentaRow) => {
+    setSelected(cuenta); setForm(formInicial); setActionError(null); setModalOpen(true)
+    setMovimientos([]); setMovimientosLoading(true)
+    const { data, error } = await supabase.from('movimientos_cxc')
+      .select('id,numero,tipo,monto,fecha,referencia')
+      .eq('cuenta_id', cuenta.id).is('deleted_at', null)
+      .order('fecha', { ascending: false }).order('created_at', { ascending: false }).limit(20)
+    if (error) setActionError(`No fue posible cargar el historial: ${traducirError(error)}`)
+    setMovimientos((data || []) as MovimientoRow[])
+    setMovimientosLoading(false)
   }
 
-  async function guardarAbono(imprimir = false) {
-    if (!abonoFactura) return
-    if (abonoMonto <= 0) return alert('El abono debe ser mayor que 0')
-    if (abonoMonto > abonoFactura.saldo + 0.01) return alert(`El abono no puede ser mayor que el saldo (${money(abonoFactura.saldo)})`)
+  const registrarAbono = async (event: FormEvent) => {
+    event.preventDefault(); setActionError(null)
+    if (!selected) return
+    const monto = Number(form.monto)
+    if (!Number.isFinite(monto) || monto <= 0) return setActionError('El monto del abono debe ser mayor que cero.')
+    if (monto > Number(selected.saldo)) return setActionError(`El abono no puede superar el saldo pendiente de ${dinero(selected.saldo)}.`)
     setSaving(true)
-    const { error } = await supabase.from('factura_abonos').insert({
-      factura_id: abonoFactura.id,
-      fecha: hoyISO(),
-      monto: abonoMonto,
-      metodo_pago: abonoMetodo,
-      registrado_por: perfil?.nombre || perfil?.username || null,
-      notas: abonoNotas || null,
+    const { error } = await supabase.rpc('avicola_registrar_abono', {
+      p_cuenta_id: selected.id,
+      p_monto: monto,
+      p_fecha: form.fecha,
+      p_referencia: form.referencia.trim() || null,
+      p_observaciones: form.observaciones.trim() || null,
     })
-    if (error) {
-      setSaving(false)
-      return alert('Error al registrar el abono: ' + error.message)
-    }
-    // Si el abono salda la deuda, marcar la factura como PAGADA
-    const nuevoSaldo = abonoFactura.saldo - abonoMonto
-    if (nuevoSaldo <= 0.01) {
-      await supabase.from('facturas').update({ estado: 'PAGADA' }).eq('id', abonoFactura.id)
-    }
-    if (imprimir) {
-      setRecibo({
-        factura: abonoFactura,
-        monto: abonoMonto,
-        metodo: abonoMetodo,
-        abonadoAntes: abonoFactura.abonado,
-        saldoRestante: Math.max(0, nuevoSaldo),
-        hora: new Date().toISOString(),
-      })
-      setTimeout(() => window.print(), 400)
-    }
     setSaving(false)
-    setAbonoFactura(null)
-    cargar()
+    if (error) { setActionError(traducirError(error)); return }
+    setModalOpen(false); setSelected(null); setForm(formInicial)
+    await cargar()
   }
 
-  const listaVisible = filas.filter((f) => (verSaldadas ? true : f.saldo > 0.01))
+  const columns: DataColumn<CuentaRow>[] = [
+    { key: 'cuenta', header: 'Cuenta', render: (row) => <div><p className="font-semibold text-slate-900">{row.numero}</p><p className="text-xs text-slate-500">Emitida {fechaLocal(row.fecha_emision)}</p></div> },
+    { key: 'cliente', header: 'Cliente', render: (row) => <span className="font-semibold text-slate-900">{row.cliente_nombre}</span> },
+    { key: 'vencimiento', header: 'Vencimiento', render: (row) => <div><p>{fechaLocal(row.fecha_vencimiento)}</p><p className={`text-xs ${row.dias_vencidos > 0 ? 'font-semibold text-rose-600' : 'text-slate-500'}`}>{row.dias_vencidos > 0 ? `${row.dias_vencidos} días vencida` : 'Dentro de plazo'}</p></div> },
+    { key: 'progreso', header: 'Progreso', render: (row) => { const cargos = Number(row.cargos); const creditos = Number(row.creditos); const porcentaje = cargos > 0 ? Math.min(100, Math.round((creditos / cargos) * 100)) : 100; return <div className="min-w-36"><div className="mb-1 flex justify-between text-xs"><span>{porcentaje}% cobrado</span><span>{dinero(row.creditos)}</span></div><div className="h-2 overflow-hidden rounded-full bg-slate-100"><div className="h-full rounded-full bg-emerald-600" style={{ width: `${porcentaje}%` }} /></div></div> } },
+    { key: 'saldo', header: 'Saldo', align: 'right', render: (row) => <span className="font-semibold text-slate-900">{dinero(row.saldo)}</span> },
+    { key: 'estado', header: 'Estado', render: (row) => <StatusBadge tone={tonoEstado(row.estado_operativo)}>{row.estado_operativo.charAt(0) + row.estado_operativo.slice(1).toLowerCase()}</StatusBadge> },
+    { key: 'acciones', header: 'Acciones', render: (row) => puedeCobrar && Number(row.saldo) > 0 && !['ANULADA', 'SALDADA'].includes(row.estado_operativo) ? <button className="btn-ghost" onClick={() => void abrirAbono(row)}><HandCoins size={16}/>Registrar abono</button> : <span className="text-xs text-slate-400">Sin acciones</span> },
+  ]
 
-  const totalAdeudado = filas.reduce((s, f) => s + f.saldo, 0)
-  const clientesConDeuda = new Set(filas.filter((f) => f.saldo > 0.01).map((f) => f.cliente_nombre ?? f.id)).size
+  return <div className="space-y-6">
+    <PageHeader eyebrow="Finanzas" title="Cuentas por cobrar" description="Controla vencimientos, saldos y abonos con movimientos financieros inmutables." />
+    <AlertBanner tone="info" title="Saldo protegido">Los saldos se derivan de cargos y abonos. Ningún usuario puede editarlos directamente.</AlertBanner>
+    {actionError && !modalOpen && <AlertBanner tone="error" title="No se pudo completar la acción">{actionError}</AlertBanner>}
 
-  return (
-    <div>
-      <PageHeader title="Cuentas por cobrar" subtitle="Ventas a crédito y abonos" />
+    <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <KpiCard label="Total por cobrar" value={dinero(resumen.saldo)} icon={CircleDollarSign} helper="página actual" />
+      <KpiCard label="Saldo vencido" value={dinero(resumen.vencido)} icon={ClockAlert} helper="página actual" />
+      <KpiCard label="Saldo por vencer" value={dinero(resumen.porVencer)} icon={CalendarClock} helper="pendiente y parcial · página actual" />
+      <KpiCard label="Clientes con saldo" value={resumen.clientes} icon={Users} helper="sin duplicar · página actual" />
+    </section>
 
-      <div className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        <div className="card flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-rose-50 text-rose-600"><Wallet size={20} /></div>
-          <div>
-            <p className="text-xs text-slate-600">Total por cobrar</p>
-            <p className="text-xl font-bold text-slate-800">{money(totalAdeudado)}</p>
-          </div>
-        </div>
-        <div className="card flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-50 text-amber-600"><HandCoins size={20} /></div>
-          <div>
-            <p className="text-xs text-slate-600">Clientes que deben</p>
-            <p className="text-xl font-bold text-slate-800">{clientesConDeuda}</p>
-          </div>
-        </div>
-      </div>
+    <DataTable rows={rows} columns={columns} getRowKey={(row) => row.id} loading={loading} error={loadError} page={page} totalPages={Math.ceil(total / PAGE_SIZE)} totalRecords={total} onPageChange={setPage} emptyTitle="No hay cuentas por cobrar" emptyDescription="Las ventas a crédito confirmadas aparecerán aquí automáticamente." toolbar={<div className="flex flex-wrap items-center gap-2"><label className="relative"><span className="sr-only">Buscar cuentas</span><Search size={16} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/><input className="input w-64 pl-9" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cuenta o cliente" /></label><select className="input w-40" value={estado} onChange={(e) => { setEstado(e.target.value); setPage(0) }} aria-label="Filtrar por estado"><option value="TODOS">Todos</option><option value="PENDIENTE">Pendientes</option><option value="PARCIAL">Parciales</option><option value="VENCIDA">Vencidas</option><option value="SALDADA">Saldadas</option><option value="ANULADA">Anuladas</option></select><button className="btn-ghost" onClick={() => { setActionError(null); void cargar() }} disabled={loading}><RefreshCw size={16} className={loading ? 'animate-spin' : ''}/>Actualizar</button></div>} />
 
-      {loading ? (
-        <Cargando />
-      ) : (
-        <DataTable
-          rows={listaVisible}
-          rowKey={(f) => f.id}
-          searchText={(f) => `${codigoFactura(f)} ${f.cliente_nombre ?? ''} ${f.fecha}`}
-          searchPlaceholder="Buscar por cliente, código o fecha…"
-          emptyText={filas.length === 0 ? 'No hay ventas a crédito.' : 'No hay cuentas que coincidan.'}
-          initialSort={{ index: 2, dir: 'desc' }}
-          toolbar={
-            <label className="flex items-center gap-2 text-sm text-slate-600">
-              <input type="checkbox" checked={verSaldadas} onChange={(e) => setVerSaldadas(e.target.checked)} />
-              Mostrar también las saldadas
-            </label>
-          }
-          columns={[
-            { header: 'Factura', cell: (f) => <span className="font-mono font-semibold text-slate-700">{codigoFactura(f)}</span>, sortValue: (f) => f.numero ?? 0 },
-            { header: 'Cliente', cell: (f) => <span className="font-medium text-slate-800">{f.cliente_nombre || 'Cliente'}</span>, sortValue: (f) => f.cliente_nombre ?? '' },
-            { header: 'Fecha', cell: (f) => <span className="text-slate-500">{fechaCorta(f.fecha)}</span>, sortValue: (f) => f.fecha },
-            { header: 'Total', align: 'right', cell: (f) => money(f.total), sortValue: (f) => f.total },
-            { header: 'Abonado', align: 'right', cell: (f) => <span className="text-emerald-600">{money(f.abonado)}</span>, sortValue: (f) => f.abonado },
-            { header: 'Saldo', align: 'right', cell: (f) => <span className="font-bold text-slate-800">{money(f.saldo)}</span>, sortValue: (f) => f.saldo },
-            {
-              header: '', align: 'right', cell: (f) =>
-                f.saldo > 0.01 ? (
-                  puedeCobrar ? (
-                    <button onClick={() => abrirAbono(f)} className="rounded-lg bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-100">
-                      <HandCoins size={13} className="-mt-0.5 mr-0.5 inline" /> Registrar abono
-                    </button>
-                  ) : (
-                    <span className="badge bg-amber-50 text-amber-700">Pendiente</span>
-                  )
-                ) : (
-                  <span className="badge bg-emerald-50 text-emerald-700">Saldada</span>
-                ),
-            },
-          ]}
-        />
-      )}
-
-      {/* MODAL ABONO */}
-      <Modal
-        open={!!abonoFactura}
-        title={`Registrar abono · ${abonoFactura ? codigoFactura(abonoFactura) : ''}`}
-        onClose={() => setAbonoFactura(null)}
-        footer={
-          <>
-            <button className="btn-ghost" onClick={() => setAbonoFactura(null)}>Cancelar</button>
-            <button className="btn-ghost" onClick={() => guardarAbono(false)} disabled={saving}>{saving ? 'Guardando…' : 'Registrar'}</button>
-            <button className="btn-primary" onClick={() => guardarAbono(true)} disabled={saving}><Printer size={16} /> Guardar e imprimir</button>
-          </>
-        }
-      >
-        {abonoFactura && (
-          <div className="space-y-4">
-            <div className="rounded-xl bg-slate-50 p-3 text-sm">
-              <div className="flex justify-between text-slate-600"><span>Cliente</span><span className="font-medium text-slate-800">{abonoFactura.cliente_nombre || 'Cliente'}</span></div>
-              <div className="flex justify-between text-slate-600"><span>Total</span><span>{money(abonoFactura.total)}</span></div>
-              <div className="flex justify-between text-slate-600"><span>Abonado</span><span className="text-emerald-600">{money(abonoFactura.abonado)}</span></div>
-              <div className="mt-1 flex justify-between border-t border-slate-200 pt-1 font-bold text-slate-800"><span>Saldo</span><span>{money(abonoFactura.saldo)}</span></div>
-            </div>
-            <div>
-              <label className="label">Monto del abono (RD$)</label>
-              <input type="number" min={0} step={50} className="input" value={abonoMonto || ''} onChange={(e) => setAbonoMonto(Number(e.target.value))} />
-              <button type="button" className="mt-1 text-xs font-semibold text-brand-600 hover:underline" onClick={() => setAbonoMonto(abonoFactura.saldo)}>Pagar todo el saldo ({money(abonoFactura.saldo)})</button>
-            </div>
-            <div>
-              <label className="label">Método de pago</label>
-              <select className="input" value={abonoMetodo} onChange={(e) => setAbonoMetodo(e.target.value)}>
-                {METODOS_PAGO.map((m) => <option key={m}>{m}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="label">Notas</label>
-              <textarea className="input" rows={2} value={abonoNotas} onChange={(e) => setAbonoNotas(e.target.value)} />
-            </div>
-            {(abonosByFactura[abonoFactura.id]?.length ?? 0) > 0 && (
-              <div>
-                <p className="label">Abonos anteriores</p>
-                <ul className="divide-y divide-slate-100 rounded-xl border border-slate-100 text-sm">
-                  {abonosByFactura[abonoFactura.id].map((a) => (
-                    <li key={a.id} className="flex items-center justify-between px-3 py-2">
-                      <span className="text-slate-500">{fechaCorta(a.fecha)} · {a.metodo_pago || '—'}</span>
-                      <span className="font-semibold text-slate-700">{money(a.monto)}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        )}
-      </Modal>
-
-      {/* COMPROBANTE DE ABONO (imprimible) */}
-      <Modal open={!!recibo} title="Recibo de abono" onClose={() => setRecibo(null)}>
-        {recibo && (
-          <div className="space-y-3">
-            <div id="recibo-abono" className="print-area space-y-2 rounded-xl border border-slate-100 p-3 text-sm">
-              <div className="text-center">
-                <img src={`${import.meta.env.BASE_URL}${negocio.logo}`} alt={negocio.nombre} className="mx-auto mb-1 h-14 rounded-lg bg-white object-contain" />
-                <p className="font-display text-base font-bold text-brand-800">{negocio.nombre}</p>
-                {negocio.rnc && <p className="text-xs text-slate-500">RNC: {negocio.rnc}</p>}
-                <p className="text-xs text-slate-500">Tel/WhatsApp: {negocio.telefono}</p>
-                <p className="mt-1 text-xs font-semibold text-slate-600">RECIBO DE ABONO</p>
-                <p className="text-xs text-slate-600">Factura {codigoFactura(recibo.factura)} · {fechaHora(recibo.hora)}</p>
-              </div>
-              <p className="text-slate-600"><span className="font-medium">Cliente:</span> {recibo.factura.cliente_nombre ?? 'Cliente'}</p>
-              <div className="space-y-0.5 border-t pt-1">
-                <div className="flex justify-between text-slate-600"><span>Total de la factura</span><span>{money(recibo.factura.total)}</span></div>
-                <div className="flex justify-between text-slate-600"><span>Abonado antes</span><span>{money(recibo.abonadoAntes)}</span></div>
-                <div className="flex justify-between text-base font-bold text-slate-800"><span>Este abono</span><span>{money(recibo.monto)}</span></div>
-                <div className="flex justify-between text-slate-600"><span>Método</span><span>{recibo.metodo}</span></div>
-                <div className="flex justify-between font-semibold text-rose-600"><span>Saldo pendiente</span><span>{money(recibo.saldoRestante)}</span></div>
-              </div>
-              <p className="text-xs text-slate-600">Recibido por: {perfil?.nombre || perfil?.username || '—'}</p>
-              <div className="border-t pt-1 text-center text-xs text-slate-500">
-                <p>{negocio.direccion} · {negocio.referencia}</p>
-              </div>
-              <p className="text-center text-xs font-medium text-brand-600">¡Gracias por su pago! </p>
-            </div>
-            <div className="flex gap-2 no-print">
-              <button className="btn-ghost flex-1" onClick={() => setRecibo(null)}>Cerrar</button>
-              <button className="btn-primary flex-1" onClick={() => window.print()}><Printer size={16} /> Imprimir</button>
-            </div>
-          </div>
-        )}
-      </Modal>
-    </div>
-  )
+    <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Registrar abono" description={selected ? `${selected.numero} · ${selected.cliente_nombre}` : undefined} initialFocusRef={montoRef} busy={saving} size="lg" footer={<><button type="button" className="btn-ghost" onClick={() => setModalOpen(false)} disabled={saving}>Cancelar</button><button type="submit" form="abono-form" className="btn-primary" disabled={saving}>{saving ? 'Registrando…' : 'Registrar abono'}</button></>}>
+      <form id="abono-form" onSubmit={registrarAbono} className="space-y-5">
+        {actionError && <AlertBanner tone="error" title="No se pudo registrar el abono">{actionError}</AlertBanner>}
+        {selected && <div className="grid gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 sm:grid-cols-3"><div><p className="text-xs text-slate-500">Total</p><p className="font-semibold">{dinero(selected.cargos)}</p></div><div><p className="text-xs text-slate-500">Abonado</p><p className="font-semibold">{dinero(selected.creditos)}</p></div><div><p className="text-xs text-slate-500">Saldo</p><p className="font-semibold text-emerald-700">{dinero(selected.saldo)}</p></div></div>}
+        <div className="grid gap-4 sm:grid-cols-2"><FormField label="Monto" htmlFor="abono-monto" required><input ref={montoRef} id="abono-monto" className="input" type="number" min="0.01" step="0.01" max={selected ? Number(selected.saldo) : undefined} value={form.monto} onChange={(e) => setForm({ ...form, monto: e.target.value })} required /></FormField><FormField label="Fecha" htmlFor="abono-fecha" required><input id="abono-fecha" className="input" type="date" max={hoy} value={form.fecha} onChange={(e) => setForm({ ...form, fecha: e.target.value })} required /></FormField><FormField label="Referencia" htmlFor="abono-referencia"><input id="abono-referencia" className="input" value={form.referencia} onChange={(e) => setForm({ ...form, referencia: e.target.value })} placeholder="Transferencia, recibo…" /></FormField><FormField label="Observaciones" htmlFor="abono-observaciones"><input id="abono-observaciones" className="input" value={form.observaciones} onChange={(e) => setForm({ ...form, observaciones: e.target.value })} /></FormField></div>
+        <div><h3 className="mb-2 text-sm font-semibold text-slate-900">Movimientos recientes</h3>{movimientosLoading ? <p className="text-sm text-slate-500">Cargando historial…</p> : movimientos.length === 0 ? <p className="text-sm text-slate-500">No hay movimientos disponibles.</p> : <div className="max-h-48 divide-y divide-slate-100 overflow-y-auto rounded-xl border border-slate-200">{movimientos.map((mov) => <div key={mov.id} className="flex items-center justify-between gap-4 px-3 py-2 text-sm"><div><p className="font-medium text-slate-800">{mov.numero} · {mov.tipo.split('_').join(' ')}</p><p className="text-xs text-slate-500">{fechaLocal(mov.fecha)}{mov.referencia ? ` · ${mov.referencia}` : ''}</p></div><span className={mov.tipo === 'ABONO' ? 'font-semibold text-emerald-700' : 'font-semibold text-slate-900'}>{dinero(mov.monto)}</span></div>)}</div>}</div>
+      </form>
+    </Modal>
+  </div>
 }
