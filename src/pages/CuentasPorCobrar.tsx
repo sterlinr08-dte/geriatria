@@ -66,6 +66,7 @@ export default function CuentasPorCobrar() {
   const [saving, setSaving] = useState(false)
   const montoRef = useRef<HTMLInputElement>(null)
   const requestRef = useRef(0)
+  const movRequestRef = useRef(0)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const puedeCobrar = !!empresaActiva && WRITERS.includes(empresaActiva.rol)
@@ -82,7 +83,7 @@ export default function CuentasPorCobrar() {
       .order('fecha_vencimiento', { ascending: true })
       .range(from, from + PAGE_SIZE - 1)
 
-    const term = busqueda.trim().replace(/[%_,()]/g, '')
+    const term = busqueda.trim().replace(/[%_,()*]/g, '')
     if (term) query = query.or(`numero.ilike.%${term}%,cliente_nombre.ilike.%${term}%`)
     if (filtroEstado !== 'TODOS') query = query.eq('estado_operativo', filtroEstado)
 
@@ -96,8 +97,10 @@ export default function CuentasPorCobrar() {
 
   useEffect(() => {
     requestRef.current += 1
+    movRequestRef.current += 1
     setRows([]); setTotal(0); setPage(0); setSearch(''); setEstado('TODOS')
     setLoadError(null); setActionError(null)
+    setModalOpen(false); setSelected(null); setMovimientos([]); setMovimientosLoading(false)
   }, [empresaActiva?.id])
 
   useEffect(() => { void cargar() }, [empresaActiva?.id, page, estado])
@@ -116,12 +119,14 @@ export default function CuentasPorCobrar() {
   }), [rows])
 
   const abrirAbono = async (cuenta: CuentaRow) => {
+    const requestId = ++movRequestRef.current
     setSelected(cuenta); setForm(formInicial); setActionError(null); setModalOpen(true)
     setMovimientos([]); setMovimientosLoading(true)
     const { data, error } = await supabase.from('movimientos_cxc')
       .select('id,numero,tipo,monto,fecha,referencia')
       .eq('cuenta_id', cuenta.id).is('deleted_at', null)
       .order('fecha', { ascending: false }).order('created_at', { ascending: false }).limit(20)
+    if (requestId !== movRequestRef.current) return
     if (error) setActionError(`No fue posible cargar el historial: ${traducirError(error)}`)
     setMovimientos((data || []) as MovimientoRow[])
     setMovimientosLoading(false)
