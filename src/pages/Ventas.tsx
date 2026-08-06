@@ -83,7 +83,8 @@ export default function Ventas() {
   const [page, setPage] = useState(0)
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [actionError, setActionError] = useState<string | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
   const [modalError, setModalError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
@@ -129,10 +130,9 @@ export default function Ventas() {
     ])
 
     if (requestId !== catalogRequestRef.current) return
-
     const catalogError = clientesResult.error || presentacionesResult.error
     if (catalogError) {
-      setError(traducirError(catalogError))
+      setActionError(`No fue posible cargar los catálogos: ${traducirError(catalogError)}`)
       return
     }
 
@@ -150,7 +150,7 @@ export default function Ventas() {
     }
 
     setLoading(true)
-    setError(null)
+    setLoadError(null)
     const from = page * PAGE_SIZE
     const { data, count, error: queryError } = await supabase
       .from('ventas_huevos')
@@ -161,7 +161,7 @@ export default function Ventas() {
       .range(from, from + PAGE_SIZE - 1)
 
     if (requestId !== rowsRequestRef.current) return
-    if (queryError) setError(traducirError(queryError))
+    if (queryError) setLoadError(traducirError(queryError))
     setRows((data || []) as VentaRow[])
     setTotal(count || 0)
     setLoading(false)
@@ -174,6 +174,8 @@ export default function Ventas() {
     setPresentaciones([])
     setRows([])
     setTotal(0)
+    setActionError(null)
+    setLoadError(null)
     setPage(0)
     void cargarCatalogos()
   }, [empresaActiva?.id])
@@ -195,26 +197,11 @@ export default function Ventas() {
     event.preventDefault()
     setModalError(null)
 
-    if (!empresaActiva || !form.presentacion_id) {
-      setModalError('Selecciona una empresa y una presentación.')
-      return
-    }
-    if (!Number.isInteger(cantidad) || cantidad <= 0) {
-      setModalError('La cantidad de empaques debe ser un entero mayor que cero.')
-      return
-    }
-    if (!Number.isFinite(precio) || precio < 0) {
-      setModalError('El precio debe ser un valor válido mayor o igual que cero.')
-      return
-    }
-    if (!Number.isFinite(descuento) || descuento < 0 || descuento > subtotalEstimado) {
-      setModalError('El descuento no puede ser negativo ni superar el subtotal estimado.')
-      return
-    }
-    if (!form.cliente_nombre.trim()) {
-      setModalError('Indica el nombre del cliente.')
-      return
-    }
+    if (!empresaActiva || !form.presentacion_id) return setModalError('Selecciona una empresa y una presentación.')
+    if (!Number.isInteger(cantidad) || cantidad <= 0) return setModalError('La cantidad de empaques debe ser un entero mayor que cero.')
+    if (!Number.isFinite(precio) || precio < 0) return setModalError('El precio debe ser un valor válido mayor o igual que cero.')
+    if (!Number.isFinite(descuento) || descuento < 0 || descuento > subtotalEstimado) return setModalError('El descuento no puede ser negativo ni superar el subtotal estimado.')
+    if (!form.cliente_nombre.trim()) return setModalError('Indica el nombre del cliente.')
 
     setSaving(true)
     const { data: venta, error: ventaError } = await supabase
@@ -253,14 +240,16 @@ export default function Ventas() {
       })
 
     if (detalleError) {
-      const { error: cleanupError } = await supabase
+      const { data: cleanedRows, error: cleanupError } = await supabase
         .from('ventas_huevos')
         .update({ deleted_at: new Date().toISOString() })
         .eq('id', venta.id)
         .eq('estado', 'BORRADOR')
+        .select('id')
 
+      const cleanupFailed = !!cleanupError || !cleanedRows || cleanedRows.length === 0
       setSaving(false)
-      setModalError(cleanupError
+      setModalError(cleanupFailed
         ? `${traducirError(detalleError)} Además, no se pudo limpiar el borrador incompleto.`
         : traducirError(detalleError))
       return
@@ -274,12 +263,12 @@ export default function Ventas() {
 
   const confirmar = async (venta: VentaRow) => {
     if (venta.estado !== 'BORRADOR' || confirmandoId) return
-    setError(null)
+    setActionError(null)
     setConfirmandoId(venta.id)
     const { error: rpcError } = await supabase.rpc('avicola_confirmar_venta', { p_venta_id: venta.id })
     setConfirmandoId(null)
     if (rpcError) {
-      setError(traducirError(rpcError))
+      setActionError(traducirError(rpcError))
       return
     }
     await cargar()
@@ -317,7 +306,7 @@ export default function Ventas() {
       title="Ventas"
       description="Crea borradores y confirma ventas con descuento automático de inventario mediante FEFO."
       actions={puedeEscribir
-        ? <button className="btn-primary" onClick={() => { setForm(formInicial); setModalError(null); setModalOpen(true) }}>
+        ? <button className="btn-primary" onClick={() => { setForm(formInicial); setModalError(null); setActionError(null); setModalOpen(true) }}>
             <Plus size={16} /> Nueva venta
           </button>
         : undefined}
@@ -326,6 +315,10 @@ export default function Ventas() {
     <AlertBanner tone="info" title="Inventario protegido">
       La pantalla no calcula FEFO ni descuenta existencias. La confirmación delega toda la operación a Supabase de forma transaccional.
     </AlertBanner>
+
+    {actionError && <AlertBanner tone="error" title="No se pudo completar la acción">
+      {actionError}
+    </AlertBanner>}
 
     <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       <KpiCard label="Ventas visibles" value={rows.length} icon={ReceiptText} helper="página actual" />
@@ -339,14 +332,14 @@ export default function Ventas() {
       columns={columns}
       getRowKey={(row) => row.id}
       loading={loading}
-      error={error}
+      error={loadError}
       page={page}
       totalPages={Math.ceil(total / PAGE_SIZE)}
       totalRecords={total}
       onPageChange={setPage}
       emptyTitle="No hay ventas registradas"
       emptyDescription="Crea una venta en borrador y confírmala cuando esté lista para descontar inventario."
-      toolbar={<button className="btn-ghost" onClick={() => { void cargar(); void cargarCatalogos() }} disabled={loading}>
+      toolbar={<button className="btn-ghost" onClick={() => { setActionError(null); void cargar(); void cargarCatalogos() }} disabled={loading}>
         <RefreshCw size={16} className={loading ? 'animate-spin' : ''} /> Actualizar
       </button>}
     />
