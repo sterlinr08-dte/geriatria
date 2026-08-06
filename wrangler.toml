@@ -1,0 +1,28 @@
+# Despliegue de AVÍCOLA ERP en Cloudflare Workers (Static Assets).
+#
+# El nombre debe coincidir EXACTAMENTE con el worker que ya existe en la cuenta
+# ("geriatria"). Si se cambia, `wrangler deploy` crea un worker NUEVO en vez de
+# actualizar el actual, y el dominio seguiría apuntando al viejo.
+name = "geriatria"
+
+# Fecha de la primera configuración de este archivo. No subirla sin probar:
+# fija el conjunto de APIs del runtime con el que se validó el despliegue.
+compatibility_date = "2026-08-06"
+
+# Sin `main`: este worker sirve únicamente archivos estáticos, no ejecuta código
+# propio. Por eso tampoco lleva `binding` bajo [assets] (solo es válido con `main`).
+
+[assets]
+# Salida de `npm run build`.
+directory = "./dist"
+
+# La app es una SPA con react-router: cualquier ruta que no corresponda a un
+# archivo (por ejemplo /ventas o /cuentas-cobrar recargados directamente) debe
+# devolver index.html con 200. Sin esto, recargar dentro de la app da 404.
+not_found_handling = "single-page-application"
+
+# Rutas y dominio personalizado NO se declaran aquí a propósito: `geriatra.nexusprord.com`
+# ya está configurado en el panel de Cloudflare. Al omitir `routes` y `workers_dev`,
+# `wrangler deploy` actualiza el código sin tocar esa configuración existente.
+# Si algún día se quiere versionar el dominio, se agrega aquí y se valida con
+# `npm run deploy:dry` antes de publicar.
